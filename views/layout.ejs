@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= typeof title !=='undefined' ? title + ' | Inventory System' : 'Inventory System' %>
+    </title>
+
+    <!-- PWA Settings for Mobile -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#F97316">
+    <link rel="apple-touch-icon" href="/images/mnd-logo.jpg">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Inventory">
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/style.css">
+
+    <% if (typeof extraCss !=='undefined' ) { %>
+        <style>
+            < %- extraCss %>
+        </style>
+        <% } %>
+</head>
+
+<body>
+
+    <% if (typeof user !=='undefined' ) { %>
+        <!-- Navbar for Logged In Users -->
+        <nav class="navbar">
+            <a href="<%= user.userRole === 'Owner' ? '/dashboard' : '/products' %>" class="nav-brand"
+                style="display: flex; align-items: center; gap: 0.5rem;">
+                <img src="/images/mnd-logo.jpg" alt="MND Logo"
+                    style="height: 32px; width: auto; border-radius: 4px; object-fit: contain;">
+                Inventory
+            </a>
+
+            <div class="nav-links">
+                <% if (user.userRole==='Owner' ) { %>
+                    <a href="/dashboard" class="nav-link">หน้าหลัก</a>
+                    <% } %>
+                        <a href="/products" class="nav-link">สินค้าคลัง</a>
+                        <a href="/pos" class="nav-link">ขายสินค้า (POS)</a>
+            </div>
+
+            <div class="nav-user">
+                <span class="text-muted" style="margin-right: 1rem;">ผู้ใช้งาน: <strong>
+                        <%= user.username || user.role %>
+                    </strong> (<%= user.userRole || user.role %>)</span>
+                <a href="/logout" class="btn btn-primary"
+                    style="padding: 0.5rem 1rem; font-size: 0.875rem;">ออกจากระบบ</a>
+            </div>
+        </nav>
+        <% } %>
+
+            <main class="<%= typeof user !== 'undefined' ? 'main-content' : '' %>">
+                <%- body %>
+            </main>
+
+            <% if (typeof extraJs !=='undefined' ) { %>
+                <script><%- extraJs %></script>
+                <% } %>
+</body>
+
+</html>

@@ -1,0 +1,293 @@
+<%- include('layout', { title: 'จัดการคลังสินค้า' , user: user, body: ` <div class="card" style="margin-bottom: 2rem;">
+    <div class="flex items-center" style="justify-content: space-between; margin-bottom: 1.5rem;">
+        <h2>รายการสินค้าคงคลัง (Inventory)</h2>
+        <button class="btn btn-primary" onclick="openAddModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                style="margin-right:0.5rem;">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            เพิ่มสินค้าใหม่
+        </button>
+    </div>
+
+    ${success ? `
+    <div class="alert" style="background-color: #D1FAE5; color: var(--secondary); border: 1px solid #34D399;">
+        ${success}
+    </div>
+    ` : ''}
+
+    ${error ? `
+    <div class="alert alert-danger">
+        ${error}
+    </div>
+    ` : ''}
+
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--border); color: var(--text-muted);">
+                    <th style="padding: 1rem;">รหัส (Code)</th>
+                    <th style="padding: 1rem;">ชื่อสินค้า (Name)</th>
+                    <th style="padding: 1rem;">ประเภท (Category)</th>
+                    <th style="padding: 1rem; text-align: center;">หน่วย (Unit)</th>
+                    <th style="padding: 1rem; text-align: right;">ราคา (Price)</th>
+                    <th style="padding: 1rem; text-align: right;">คงเหลือ (Stock)</th>
+                    <th style="padding: 1rem; text-align: right;">น้ำหนัก (Weight)</th>
+                    <th style="padding: 1rem; text-align: center;">จัดการ (Actions)</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${products.length === 0 ? `
+                <tr>
+                    <td colspan="6" class="text-center text-muted" style="padding: 2rem;">
+                        ไม่มีข้อมูลสินค้า (No products available)
+                    </td>
+                </tr>
+                ` : products.map(product => `
+                <tr style="border-bottom: 1px solid var(--border);">
+                    <td style="padding: 1rem;"><strong>${product.code}</strong></td>
+                    <td style="padding: 1rem;">${product.name}</td>
+                    <td style="padding: 1rem;">
+                        <span
+                            style="background: var(--bg-app); padding: 0.25rem 0.75rem; border-radius: 99px; font-size: 0.875rem; color: var(--text-muted);">
+                            ${product.category}
+                        </span>
+                    </td>
+                    <td style="padding: 1rem; text-align: center; color: var(--text-muted);">${product.unit || 'ชิ้น'}</td>
+                    <td style="padding: 1rem; text-align: right;">฿${product.price.toLocaleString('th-TH')}</td>
+                    <td style="padding: 1rem; text-align: right;">
+                        ${(product.stock <= 5 && product.stock> 0) ? `
+                            <span style="color: var(--warning); font-weight: 600;">${product.stock} ${product.unit || 'ชิ้น'}</span>
+                            ` : product.stock === 0 ? `
+                            <span style="color: var(--danger); font-weight: 600;">หมด (Out of Stock)</span>
+                            ` : `
+                            <span style="color: var(--secondary); font-weight: 600;">${product.stock} ${product.unit || 'ชิ้น'}</span>
+                            `}
+                    </td>
+                    <td style="padding: 1rem; text-align: right;">
+                        ${(product.weight > 0) ? `${product.weight} กก.` : (['กิโลกรัม', 'กรัม', 'ขีด'].includes(product.unit) ? `${product.stock} ${product.unit}` : '-')}
+                    </td>
+                    <td style="padding: 1rem; text-align: center;">
+                        <button class="btn"
+                            style="background-color: var(--bg-input); color: var(--text-main); padding: 0.5rem; font-size: 0.875rem;"
+                            onclick="openEditModal('${product._id}', '${product.code}', '${product.name}', '${product.category}', '${product.price}', '${product.stock}', '${product.weight}', '${product.unit || 'ชิ้น'}')">
+                            แก้ไข
+                        </button>
+
+                        ${user.role === 'Owner' || user.userRole === 'Owner' ? `
+                        <form action="/products/delete/${product._id}" method="POST" style="display:inline;"
+                            onsubmit="return confirm('ยืนยันการลบสินค้า \`${product.name}\` ?');">
+                            <button type="submit" class="btn"
+                                style="background-color: #FEF2F2; color: var(--danger); padding: 0.5rem; font-size: 0.875rem; margin-left: 0.5rem;">
+                                ลบ
+                            </button>
+                        </form>
+                        ` : ''}
+                    </td>
+                </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    </div>
+    </div>
+
+    <!-- Modal CSS directly injected to keep it simple -->
+    <style>
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            width: 100%;
+            max-width: 500px;
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-active {
+            display: flex;
+        }
+    </style>
+
+    <!-- Add Product Modal -->
+    <div class="modal-overlay" id="addModal">
+        <div class="modal">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3>เพิ่มสินค้าใหม่</h3>
+                <button onclick="closeModal('addModal')"
+                    style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</button>
+            </div>
+            <form action="/products/add" method="POST">
+                <div class="form-group">
+                    <label class="form-label">รหัสสินค้า (Code)</label>
+                    <input type="text" name="code" class="form-control" required placeholder="เช่น PRD-001">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">ชื่อสินค้า (Name)</label>
+                    <input type="text" name="name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">หมวดหมู่ (Category)</label>
+                    <select name="category" class="form-control" required>
+                        <option value="" disabled selected>เลือกหมวดหมู่</option>
+                        <option value="อาหารและของกิน 🍜">อาหารและของกิน 🍜</option>
+                        <option value="เครื่องดื่ม 🥤">เครื่องดื่ม 🥤</option>
+                        <option value="ของใช้ในบ้าน 🏠">ของใช้ในบ้าน 🏠</option>
+                        <option value="ของใช้ส่วนตัว 🧴">ของใช้ส่วนตัว 🧴</option>
+                        <option value="เครื่องปรุงอาหาร 🍳">เครื่องปรุงอาหาร 🍳</option>
+                        <option value="ของสด 🥬">ของสด 🥬</option>
+                        <option value="ของแช่แข็ง / แช่เย็น ❄️">ของแช่แข็ง / แช่เย็น ❄️</option>
+                        <option value="ของใช้เบ็ดเตล็ด 🔧">ของใช้เบ็ดเตล็ด 🔧</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label">ราคา (Price)</label>
+                        <input type="number" name="price" class="form-control" min="0" step="0.01" required>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label">หน่วยนับ (Unit)</label>
+                        <select name="unit" class="form-control" required>
+                            <option value="ชิ้น" selected>ชิ้น</option>
+                            <option value="แพ็ก">แพ็ก</option>
+                            <option value="กิโลกรัม">กิโลกรัม</option>
+                            <option value="ถุง">ถุง</option>
+                            <option value="ขวด">ขวด</option>
+                            <option value="กรัม">กรัม</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label">จำนวนที่มี (Stock)</label>
+                        <input type="number" name="stock" class="form-control" min="0" required>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label">น้ำหนัก (Weight)</label>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="number" name="weight" class="form-control" min="0" step="0.01" value="0">
+                            <span style="white-space: nowrap; color: var(--text-main);">กิโลกรัม</span>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1rem;">
+                    <button type="button" class="btn" style="background-color: var(--bg-input);"
+                        onclick="closeModal('addModal')">ยกเลิก</button>
+                    <button type="submit" class="btn btn-primary">บันทึกสินค้า</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Product Modal -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3>แก้ไขข้อมูลสินค้า</h3>
+                <button onclick="closeModal('editModal')"
+                    style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</button>
+            </div>
+            <form id="editForm" method="POST">
+                <div class="form-group">
+                    <label class="form-label">รหัสสินค้า (ไม่สามารถแก้ไขได้)</label>
+                    <input type="text" id="editCode" class="form-control" disabled
+                        style="background-color: var(--border);">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">ชื่อสินค้า (Name)</label>
+                    <input type="text" name="name" id="editName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">หมวดหมู่ (Category)</label>
+                    <select name="category" id="editCategory" class="form-control" required>
+                        <option value="" disabled>เลือกหมวดหมู่</option>
+                        <option value="อาหารและของกิน 🍜">อาหารและของกิน 🍜</option>
+                        <option value="เครื่องดื่ม 🥤">เครื่องดื่ม 🥤</option>
+                        <option value="ของใช้ในบ้าน 🏠">ของใช้ในบ้าน 🏠</option>
+                        <option value="ของใช้ส่วนตัว 🧴">ของใช้ส่วนตัว 🧴</option>
+                        <option value="เครื่องปรุงอาหาร 🍳">เครื่องปรุงอาหาร 🍳</option>
+                        <option value="ของสด 🥬">ของสด 🥬</option>
+                        <option value="ของแช่แข็ง / แช่เย็น ❄️">ของแช่แข็ง / แช่เย็น ❄️</option>
+                        <option value="ของใช้เบ็ดเตล็ด 🔧">ของใช้เบ็ดเตล็ด 🔧</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label">ราคา (Price)</label>
+                        <input type="number" name="price" id="editPrice" class="form-control" min="0" step="0.01" required>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label">หน่วยนับ (Unit)</label>
+                        <select name="unit" id="editUnit" class="form-control" required>
+                            <option value="ชิ้น">ชิ้น</option>
+                            <option value="แพ็ก">แพ็ก</option>
+                            <option value="กิโลกรัม">กิโลกรัม</option>
+                            <option value="ถุง">ถุง</option>
+                            <option value="ขวด">ขวด</option>
+                            <option value="กรัม">กรัม</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label">จำนวนคงเหลือ (Stock)</label>
+                        <input type="number" name="stock" id="editStock" class="form-control" min="0" required>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label">น้ำหนัก (Weight)</label>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="number" name="weight" id="editWeight" class="form-control" min="0" step="0.01" value="0">
+                            <span style="white-space: nowrap; color: var(--text-main);">กิโลกรัม</span>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1rem;">
+                    <button type="button" class="btn" style="background-color: var(--bg-input);"
+                        onclick="closeModal('editModal')">ยกเลิก</button>
+                    <button type="submit" class="btn btn-primary">บันทึกการเปลี่ยนแปลง</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openAddModal() {
+            document.getElementById('addModal').classList.add('modal-active');
+        }
+
+        function openEditModal(id, code, name, category, price, stock, weight, unit) {
+            document.getElementById('editForm').action = '/products/update/' + id;
+            document.getElementById('editCode').value = code;
+            document.getElementById('editName').value = name;
+            document.getElementById('editCategory').value = category;
+            document.getElementById('editPrice').value = price;
+            document.getElementById('editStock').value = stock;
+            document.getElementById('editWeight').value = weight && weight !== 'undefined' ? weight : 0;
+            document.getElementById('editUnit').value = unit || 'ชิ้น';
+            document.getElementById('editModal').classList.add('modal-active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('modal-active');
+        }
+
+        // Handle URL errors/success parameter alerts fading after 4s
+        setTimeout(() => {
+            document.querySelectorAll('.alert').forEach(el => el.style.display = 'none');
+        }, 4000);
+    </script>
+    `
+    }) %>

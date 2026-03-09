@@ -1,0 +1,21 @@
+{
+  "name": "MND Inventory",
+  "short_name": "Inventory",
+  "description": "ระบบบริหารจัดการคลังสินค้าอัจฉริยะ MND",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFF7ED",
+  "theme_color": "#F97316",
+  "icons": [
+    {
+      "src": "/images/mnd-logo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "/images/mnd-logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}

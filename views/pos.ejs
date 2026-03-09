@@ -1,0 +1,163 @@
+<%- include('layout', { title: 'ระบบบันทึกการขาย (POS)' , user: user, extraCss: ` .pos-container { display: flex; gap:
+    2rem; } .pos-products { flex: 2; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:
+    1rem; align-content: start; } .pos-cart { flex: 1; background: var(--bg-card); border-radius: var(--radius-lg);
+    padding: 1.5rem; box-shadow: var(--shadow-sm); position: sticky; top: 100px; max-height: calc(100vh - 120px);
+    display: flex; flex-direction: column; } .product-card { background: var(--bg-card); border-radius:
+    var(--radius-md); padding: 1rem; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; box-shadow:
+    var(--shadow-sm); } .product-card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow:
+    var(--shadow-md); } .cart-items { flex-grow: 1; overflow-y: auto; margin-bottom: 1rem; border-bottom: 1px solid
+    var(--border); padding-bottom: 1rem; } .cart-item { display: flex; justify-content: space-between; align-items:
+    center; margin-bottom: 0.5rem; padding: 0.5rem; background: var(--bg-input); border-radius: var(--radius-md); }
+    .cart-item-info { flex: 1; } .cart-item-qty { display: flex; align-items: center; gap: 0.5rem; } .qty-btn {
+    background: var(--bg-card); border: 1px solid var(--border); width: 28px; height: 28px; border-radius: 4px; display:
+    flex; align-items: center; justify-content: center; cursor: pointer; } .cart-total { font-size: 1.5rem; font-weight:
+    700; display: flex; justify-content: space-between; margin-bottom: 1rem; } `, body: ` <div class="pos-container">
+    <div class="pos-products">
+        ${products.length === 0 ? `
+        <div
+            style="grid-column: 1 / -1; text-align: center; padding: 3rem; background: var(--bg-card); border-radius: var(--radius-lg);">
+            <p class="text-muted">ไม่พบสินค้าในระบบ หรือสินค้าหมดสต็อก</p>
+        </div>
+        ` : products.map(product => `
+        <div class="product-card"
+            onclick="addToCart('${product._id}', '${product.name}', ${product.price}, ${product.stock}, '${product.unit || 'ชิ้น'}')">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span style="font-size: 0.75rem; color: var(--text-muted);">${product.code}</span>
+                <span
+                    style="font-size: 0.75rem; background: var(--bg-app); padding: 0.1rem 0.5rem; border-radius: 99px;">
+                    ${product.stock} ${product.unit || 'ชิ้น'}
+                </span>
+            </div>
+            <h4 style="margin-bottom: 0.5rem;">${product.name}</h4>
+            <div style="color: var(--primary); font-weight: 600;">฿${product.price.toLocaleString('th-TH')}</div>
+        </div>
+        `).join('')}
+    </div>
+
+    <div class="pos-cart">
+        <h3 style="margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);">รายการปัจจุบัน
+        </h3>
+        <div class="cart-items" id="cart-items">
+            <!-- Cart items appended here via JS -->
+            <div id="empty-cart-msg" class="text-muted text-center" style="margin-top: 2rem;">รอกดเลือกสินค้า...</div>
+        </div>
+
+        <div class="cart-total">
+            <span>ยอดรวม</span>
+            <span id="cart-total-amount">฿0</span>
+        </div>
+
+        <button class="btn btn-primary btn-block" style="padding: 1rem;" id="checkout-btn" onclick="processCheckout()"
+            disabled>
+            ชำระเงิน / ยืนยันการทำรายการ
+        </button>
+    </div>
+    </div>
+
+    <script>
+        let cart = {};
+
+        function addToCart(id, name, price, maxStock, unit) {
+            if (!cart[id]) {
+                cart[id] = { id, name, price, quantity: 1, maxStock, unit };
+            } else {
+                if (cart[id].quantity < maxStock) {
+                    cart[id].quantity++;
+                } else {
+                    alert('คงเหลือสูงสุดแค่ ' + maxStock + ' ' + unit);
+                }
+            }
+            renderCart();
+        }
+
+        function updateQty(id, delta) {
+            if (cart[id]) {
+                const newQty = cart[id].quantity + delta;
+                if (newQty <= 0) {
+                    delete cart[id];
+                } else if (newQty > cart[id].maxStock) {
+                    alert('คงเหลือสูงสุดแค่ ' + cart[id].maxStock + ' ' + cart[id].unit);
+                } else {
+                    cart[id].quantity = newQty;
+                }
+            }
+            renderCart();
+        }
+
+        function renderCart() {
+            const cartEl = document.getElementById('cart-items');
+            const emptyMsg = document.getElementById('empty-cart-msg');
+            const totalEl = document.getElementById('cart-total-amount');
+            const checkoutBtn = document.getElementById('checkout-btn');
+
+            cartEl.innerHTML = '';
+            let total = 0;
+            let itemCount = 0;
+
+            for (const [id, item] of Object.entries(cart)) {
+                itemCount++;
+                const subTotal = item.price * item.quantity;
+                total += subTotal;
+
+                const itemEl = document.createElement('div');
+                itemEl.className = 'cart-item';
+                itemEl.innerHTML = \`
+                        <div class="cart-item-info">
+                            <div style="font-weight: 500; font-size: 0.875rem;">\${item.name}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">฿\${item.price.toLocaleString('th-TH')}</div>
+                        </div>
+                        <div class="cart-item-qty">
+                            <button class="qty-btn" onclick="updateQty('\${id}', -1)">-</button>
+                            <span style="font-weight: 600; width: 20px; text-align: center;">\${item.quantity}</span>
+                            <button class="qty-btn" onclick="updateQty('\${id}', 1)">+</button>
+                        </div>
+                    \`;
+                    cartEl.appendChild(itemEl);
+                }
+
+                if (itemCount === 0) {
+                    if(emptyMsg) cartEl.appendChild(emptyMsg);
+                    else cartEl.innerHTML = '<div id="empty-cart-msg" class="text-muted text-center" style="margin-top: 2rem;">รอกดเลือกสินค้า...</div>';
+                    checkoutBtn.disabled = true;
+                } else {
+                    checkoutBtn.disabled = false;
+                }
+
+                totalEl.textContent = '฿' + total.toLocaleString('th-TH');
+            }
+
+            async function processCheckout() {
+                const items = Object.values(cart).map(i => ({ productId: i.id, quantity: i.quantity }));
+                
+                if (items.length === 0) return;
+
+                const btn = document.getElementById('checkout-btn');
+                btn.disabled = true;
+                btn.textContent = 'กำลังบันทึก...';
+
+                try {
+                    const response = await fetch('/api/sales', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ cart: items })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        alert('ทำรายการสำเร็จ');
+                        window.location.reload();
+                    } else {
+                        alert('เกิดข้อผิดพลาด: ' + data.message);
+                        btn.disabled = false;
+                        btn.textContent = 'ชำระเงิน / ยืนยันการทำรายการ';
+                    }
+                } catch (err) {
+                    alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
+                    btn.disabled = false;
+                    btn.textContent = 'ชำระเงิน / ยืนยันการทำรายการ';
+                }
+            }
+    </script>
+    `
+    }) %>

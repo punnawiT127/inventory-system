@@ -1,0 +1,136 @@
+<%- include('layout', { title: 'หน้าหลัก (Dashboard)' , user: user, extraCss: ` .dashboard-stats { display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; } .stat-card {
+    background: var(--bg-card); border-radius: var(--radius-lg); padding: 1.5rem; display: flex; align-items: center;
+    box-shadow: var(--shadow-sm); border: 1px solid var(--border); } .stat-icon { width: 48px; height: 48px;
+    border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: 1.5rem; }
+    .stat-primary { background: rgba(79, 70, 229, 0.1); color: var(--primary); } .stat-secondary { background: rgba(16,
+    185, 129, 0.1); color: var(--secondary); } .stat-warning { background: rgba(245, 158, 11, 0.1); color:
+    var(--warning); } .stat-value { font-size: 1.75rem; font-weight: 700; color: var(--text-main); line-height: 1;
+    margin-bottom: 0.25rem; } .stat-label { color: var(--text-muted); font-size: 0.875rem; font-weight: 500; }
+    .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; } @media (max-width: 900px) {
+    .dashboard-grid { grid-template-columns: 1fr; } } .panel { background: var(--bg-card); border-radius:
+    var(--radius-lg); padding: 1.5rem; box-shadow: var(--shadow-sm); border: 1px solid var(--border); } .panel-title {
+    font-size: 1.125rem; font-weight: 600; margin-bottom: 1.5rem; color: var(--text-main); display: flex; align-items:
+    center; justify-content: space-between; } .list-item { display: flex; justify-content: space-between; align-items:
+    center; padding: 1rem 0; border-bottom: 1px solid var(--border); } .list-item:last-child { border-bottom: none; } `,
+    body: ` <div class="dashboard-stats">
+    <div class="stat-card">
+        <div class="stat-icon stat-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+            </svg>
+        </div>
+        <div>
+            <div class="stat-value">฿${dailyTotal.toLocaleString('th-TH')}</div>
+            <div class="stat-label">ยอดขายวันนี้ (${dailyCount} รายการ)</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon stat-secondary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+            </svg>
+        </div>
+        <div>
+            <div class="stat-value">฿${monthlyTotal.toLocaleString('th-TH')}</div>
+            <div class="stat-label">ยอดขายเดือนนี้</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon stat-warning">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z">
+                </path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+        </div>
+        <div>
+            <div class="stat-value">${lowStockProducts.length}</div>
+            <div class="stat-label">สินค้าใกล้หมด (แจ้งเตือน)</div>
+        </div>
+    </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="panel">
+            <div class="panel-title">ยอดขายล่าสุด (Recent Sales)</div>
+            ${recentSales.length === 0 ? `
+            <div class="text-center text-muted" style="padding: 2rem;">ยังไม่มียอดขาย</div>
+            ` : `
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr style="border-bottom: 2px solid var(--border); color: var(--text-muted); font-size: 0.875rem;">
+                        <th style="padding: 0.75rem 0;">วันที่/เวลา</th>
+                        <th style="padding: 0.75rem 0;">พนักงาน</th>
+                        <th style="padding: 0.75rem 0;">จำนวนรายการ</th>
+                        <th style="padding: 0.75rem 0; text-align: right;">ยอดรวม</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${recentSales.map(sale => `
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 1rem 0;">
+                            ${new Date(sale.date).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' })}
+                        </td>
+                        <td style="padding: 1rem 0;">
+                            ${sale.soldBy ? sale.soldBy.username : 'Unknown'}
+                        </td>
+                        <td style="padding: 1rem 0;">
+                            ${sale.items.length} รายการ
+                        </td>
+                        <td style="padding: 1rem 0; text-align: right; font-weight: 500; color: var(--text-main);">
+                            ฿${sale.totalAmount.toLocaleString('th-TH')}
+                        </td>
+                    </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+            `}
+        </div>
+
+        <div>
+            <div class="panel" style="margin-bottom: 1.5rem;">
+                <div class="panel-title">สินค้าขายดี (Top Sellers)</div>
+                ${topProducts.length === 0 ? `
+                <div class="text-center text-muted" style="padding: 2rem;">ไม่มีข้อมูล</div>
+                ` : `
+                ${topProducts.map(tp => `
+                <div class="list-item">
+                    <div>
+                        <div style="font-weight: 500;">${tp.productDetails.name}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">${tp.productDetails.code}</div>
+                    </div>
+                    <div style="font-weight: 600; color: var(--primary);">${tp.totalSold} ชิ้น</div>
+                </div>
+                `).join('')}
+                `}
+            </div>
+
+            <div class="panel">
+                <div class="panel-title" style="color: var(--danger);">ต้องเติมสต็อกด่วน</div>
+                ${lowStockProducts.length === 0 ? `
+                <div class="text-center text-muted" style="padding: 2rem;">สต็อกพร้อมขาย</div>
+                ` : `
+                ${lowStockProducts.map(lp => `
+                <div class="list-item">
+                    <div>
+                        <div style="font-weight: 500;">${lp.name}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">${lp.code}</div>
+                    </div>
+                    <div style="font-weight: 700; color: var(--danger);">${lp.stock} ชิ้น</div>
+                </div>
+                `).join('')}
+                `}
+            </div>
+        </div>
+    </div>
+    `
+    }) %>
