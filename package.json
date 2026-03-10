@@ -1,4 +1,11 @@
 {
+  "name": "inventory-system",
+  "version": "1.0.0",
+  "description": "Inventory management system",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
   "dependencies": {
     "@line/bot-sdk": "^10.6.0",
     "bcrypt": "^6.0.0",
