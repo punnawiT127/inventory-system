@@ -3,9 +3,13 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const session = require('express-session');
+const MongoStore = require('connect-mongo').MongoStore || require('connect-mongo');
 const path = require('path');
 
 const app = express();
+
+const PORT = process.env.PORT || 3000;
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/inventory-db';
 
 // Set EJS as templating engine
 app.set('view engine', 'ejs');
@@ -21,6 +25,10 @@ app.use(session({
     secret: process.env.SESSION_SECRET || 'secret-key',
     resave: false,
     saveUninitialized: false,
+    store: MongoStore.create({
+        mongoUrl: MONGO_URI,
+        collectionName: 'sessions'
+    }),
     cookie: {
         secure: process.env.NODE_ENV === 'production',
         maxAge: 24 * 60 * 60 * 1000 // 24 hours
@@ -52,9 +60,6 @@ app.get('/', (req, res) => {
 });
 
 // Port and DB Connection
-const PORT = process.env.PORT || 3000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/inventory-db';
-
 mongoose.connect(MONGO_URI)
     .then(() => {
         console.log('Connected to MongoDB');

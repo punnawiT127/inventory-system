@@ -11,7 +11,7 @@
     .cart-item-info { flex: 1; } .cart-item-qty { display: flex; align-items: center; gap: 0.5rem; } .qty-btn {
     background: var(--bg-card); border: 1px solid var(--border); width: 28px; height: 28px; border-radius: 4px; display:
     flex; align-items: center; justify-content: center; cursor: pointer; } .cart-total { font-size: 1.5rem; font-weight:
-    700; display: flex; justify-content: space-between; margin-bottom: 1rem; } `, body: ` <div class="pos-container">
+    700; display: flex; justify-content: space-between; margin-bottom: 1rem; } @media (max-width: 768px) { .pos-container { flex-direction: column; } .pos-cart { position: static; max-height: none; } } `, body: ` <div class="pos-container">
     <div class="pos-products">
         ${products.length === 0 ? `
         <div

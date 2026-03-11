@@ -65,34 +65,36 @@
             ${recentSales.length === 0 ? `
             <div class="text-center text-muted" style="padding: 2rem;">ยังไม่มียอดขาย</div>
             ` : `
-            <table style="width: 100%; border-collapse: collapse; text-align: left;">
-                <thead>
-                    <tr style="border-bottom: 2px solid var(--border); color: var(--text-muted); font-size: 0.875rem;">
-                        <th style="padding: 0.75rem 0;">วันที่/เวลา</th>
-                        <th style="padding: 0.75rem 0;">พนักงาน</th>
-                        <th style="padding: 0.75rem 0;">จำนวนรายการ</th>
-                        <th style="padding: 0.75rem 0; text-align: right;">ยอดรวม</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${recentSales.map(sale => `
-                    <tr style="border-bottom: 1px solid var(--border);">
-                        <td style="padding: 1rem 0;">
-                            ${new Date(sale.date).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' })}
-                        </td>
-                        <td style="padding: 1rem 0;">
-                            ${sale.soldBy ? sale.soldBy.username : 'Unknown'}
-                        </td>
-                        <td style="padding: 1rem 0;">
-                            ${sale.items.length} รายการ
-                        </td>
-                        <td style="padding: 1rem 0; text-align: right; font-weight: 500; color: var(--text-main);">
-                            ฿${sale.totalAmount.toLocaleString('th-TH')}
-                        </td>
-                    </tr>
-                    `).join('')}
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid var(--border); color: var(--text-muted); font-size: 0.875rem;">
+                            <th style="padding: 0.75rem 0;">วันที่/เวลา</th>
+                            <th style="padding: 0.75rem 0;">พนักงาน</th>
+                            <th style="padding: 0.75rem 0;">จำนวนรายการ</th>
+                            <th style="padding: 0.75rem 0; text-align: right;">ยอดรวม</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${recentSales.map(sale => `
+                        <tr style="border-bottom: 1px solid var(--border);">
+                            <td style="padding: 1rem 0;">
+                                ${new Date(sale.date).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' })}
+                            </td>
+                            <td style="padding: 1rem 0;">
+                                ${sale.soldBy ? sale.soldBy.username : 'Unknown'}
+                            </td>
+                            <td style="padding: 1rem 0;">
+                                ${sale.items.length} รายการ
+                            </td>
+                            <td style="padding: 1rem 0; text-align: right; font-weight: 500; color: var(--text-main);">
+                                ฿${sale.totalAmount.toLocaleString('th-TH')}
+                            </td>
+                        </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
             `}
         </div>
 
