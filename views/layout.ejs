@@ -24,6 +24,9 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/css/style.css">
 
+    <!-- SweetAlert2 for Popups -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <% if (typeof extraCss !=='undefined' ) { %>
         <style>
             <%- extraCss %>
@@ -54,6 +57,9 @@
                     <% } %>
                     <a href="/products" class="nav-link">สินค้าคลัง</a>
                     <a href="/pos" class="nav-link">ขายสินค้า (POS)</a>
+                    <% if (user.userRole==='Owner' ) { %>
+                        <a href="/history" class="nav-link">ประวัติการขาย</a>
+                    <% } %>
                 </div>
 
                 <div class="nav-user">

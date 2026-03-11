@@ -145,15 +145,34 @@
                     const data = await response.json();
                     
                     if (data.success) {
-                        alert('ทำรายการสำเร็จ');
-                        window.location.reload();
+                        Swal.fire({
+                            title: 'สำเร็จ!',
+                            text: 'ทำรายการสำเร็จ',
+                            icon: 'success',
+                            confirmButtonColor: 'var(--primary)',
+                            confirmButtonText: 'ตกลง'
+                        }).then(() => {
+                            window.location.reload();
+                        });
                     } else {
-                        alert('เกิดข้อผิดพลาด: ' + data.message);
+                        Swal.fire({
+                            title: 'ข้อผิดพลาด',
+                            text: data.message,
+                            icon: 'error',
+                            confirmButtonColor: 'var(--danger)',
+                            confirmButtonText: 'ตกลง'
+                        });
                         btn.disabled = false;
                         btn.textContent = 'ชำระเงิน / ยืนยันการทำรายการ';
                     }
                 } catch (err) {
-                    alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
+                    Swal.fire({
+                        title: 'ข้อผิดพลาดเครือข่าย',
+                        text: 'เกิดข้อผิดพลาดในการเชื่อมต่อ',
+                        icon: 'error',
+                        confirmButtonColor: 'var(--danger)',
+                        confirmButtonText: 'ตกลง'
+                    });
                     btn.disabled = false;
                     btn.textContent = 'ชำระเงิน / ยืนยันการทำรายการ';
                 }

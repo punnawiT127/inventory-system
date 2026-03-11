@@ -8,4 +8,8 @@ router.use(requireAuth);
 router.get('/pos', saleController.renderPOS);
 router.post('/api/sales', express.json(), saleController.processSale);
 
+// Only Owners can view the full history
+const { requireOwner } = require('../controllers/authController');
+router.get('/history', requireOwner, saleController.renderHistory);
+
 module.exports = router;

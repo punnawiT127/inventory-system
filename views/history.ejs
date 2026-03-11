@@ -1,0 +1,113 @@
+<%- include('layout', { title: 'ประวัติการขาย (Sales History)' , user: user, extraCss: `
+    .history-card {
+        background: var(--bg-card);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border);
+    }
+    .history-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    .history-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-main);
+    }
+    .badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        background: rgba(249, 115, 22, 0.1);
+        color: var(--primary);
+    }
+    .table th {
+        background: var(--bg-input);
+        color: var(--text-muted);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        padding: 1rem;
+    }
+    .table td {
+        padding: 1rem;
+        vertical-align: middle;
+        border-bottom: 1px solid var(--border);
+    }
+    .table tr:last-child td {
+        border-bottom: none;
+    }
+    .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--text-muted);
+    }
+`, body: `
+    <div class="history-card">
+        <div class="history-header">
+            <h2 class="history-title">ประวัติการขาย (Sales History)</h2>
+            <span class="badge">ยอดรวมทั้งหมด: ${sales.length} รายการ</span>
+        </div>
+
+        ${sales.length === 0 ? `
+            <div class="empty-state">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.5; margin-bottom: 1rem;">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                </svg>
+                <div style="font-weight: 500;">ยังไม่มีประวัติการขาย</div>
+            </div>
+        ` : `
+            <div class="table-responsive">
+                <table class="table" style="width: 100%; border-collapse: collapse; text-align: left;">
+                    <thead>
+                        <tr>
+                            <th>วันเวลาที่ขาย</th>
+                            <th>พนักงาน</th>
+                            <th>รายการสินค้าที่ขาย</th>
+                            <th style="text-align: right;">ยอดรวม</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${sales.map(sale => `
+                            <tr>
+                                <td style="font-weight: 500;">
+                                    ${new Date(sale.date).toLocaleString('th-TH', { timeZone: 'Asia/Bangkok', dateStyle: 'long', timeStyle: 'short' })} น.
+                                </td>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <div style="width: 24px; height: 24px; background: var(--bg-input); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: var(--text-muted);">
+                                            ${sale.soldBy ? sale.soldBy.username.charAt(0).toUpperCase() : '?'}
+                                        </div>
+                                        ${sale.soldBy ? sale.soldBy.username : 'Unknown'}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                        ${sale.items.map(item => `
+                                            <div style="font-size: 0.875rem; color: var(--text-muted);">
+                                                • ${item.product ? item.product.name : 'สินค้ายกเลิก/ถูกลบ'} <span style="font-weight: 500; color: var(--text-main);">x${item.quantity}</span>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </td>
+                                <td style="text-align: right; font-weight: 600; color: var(--primary);">
+                                    ฿${sale.totalAmount.toLocaleString('th-TH')}
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `}
+    </div>
+` }) %>

@@ -79,7 +79,7 @@
                         ${recentSales.map(sale => `
                         <tr style="border-bottom: 1px solid var(--border);">
                             <td style="padding: 1rem 0;">
-                                ${new Date(sale.date).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' })}
+                                ${new Date(sale.date).toLocaleString('th-TH', { timeZone: 'Asia/Bangkok', dateStyle: 'short', timeStyle: 'short' })}
                             </td>
                             <td style="padding: 1rem 0;">
                                 ${sale.soldBy ? sale.soldBy.username : 'Unknown'}

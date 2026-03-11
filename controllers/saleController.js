@@ -110,3 +110,21 @@ exports.processSale = async (req, res) => {
         res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการบันทึกการขาย' });
     }
 };
+
+exports.renderHistory = async (req, res) => {
+    try {
+        const sales = await Sale.find()
+            .populate('soldBy', 'username')
+            .populate('items.product', 'name code')
+            .sort({ date: -1 });
+
+        res.render('history', {
+            title: 'ประวัติการขาย (Sales History)',
+            user: req.session,
+            sales
+        });
+    } catch (err) {
+        console.error('History error:', err);
+        res.status(500).send('Server Error: ไม่สามารถดึงข้อมูลประวัติการขายได้');
+    }
+};
