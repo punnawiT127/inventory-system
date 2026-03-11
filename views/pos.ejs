@@ -12,24 +12,33 @@
     background: var(--bg-card); border: 1px solid var(--border); width: 28px; height: 28px; border-radius: 4px; display:
     flex; align-items: center; justify-content: center; cursor: pointer; } .cart-total { font-size: 1.5rem; font-weight:
     700; display: flex; justify-content: space-between; margin-bottom: 1rem; } @media (max-width: 768px) { .pos-container { flex-direction: column; } .pos-cart { position: static; max-height: none; } } `, body: ` <div class="pos-container">
-    <div class="pos-products">
+    <div class="pos-products" style="display: block;">
         ${products.length === 0 ? `
         <div
-            style="grid-column: 1 / -1; text-align: center; padding: 3rem; background: var(--bg-card); border-radius: var(--radius-lg);">
+            style="text-align: center; padding: 3rem; background: var(--bg-card); border-radius: var(--radius-lg);">
             <p class="text-muted">ไม่พบสินค้าในระบบ หรือสินค้าหมดสต็อก</p>
         </div>
-        ` : products.map(product => `
-        <div class="product-card"
-            onclick="addToCart('${product._id}', '${product.name}', ${product.price}, ${product.stock}, '${product.unit || 'ชิ้น'}')">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                <span style="font-size: 0.75rem; color: var(--text-muted);">${product.code}</span>
-                <span
-                    style="font-size: 0.75rem; background: var(--bg-app); padding: 0.1rem 0.5rem; border-radius: 99px;">
-                    ${product.stock} ${product.unit || 'ชิ้น'}
-                </span>
+        ` : Object.keys(groupedProducts).sort().map(category => `
+        <div class="category-section" style="margin-bottom: 2rem;">
+            <h3 style="margin-bottom: 1rem; color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                ${category}
+            </h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
+                ${groupedProducts[category].map(product => `
+                <div class="product-card"
+                    onclick="addToCart('${product._id}', '${product.name}', ${product.price}, ${product.stock}, '${product.unit || 'ชิ้น'}')">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span style="font-size: 0.75rem; color: var(--text-muted);">${product.code}</span>
+                        <span style="font-size: 0.75rem; background: var(--bg-app); padding: 0.1rem 0.5rem; border-radius: 99px;">
+                            ${product.stock} ${product.unit || 'ชิ้น'}
+                        </span>
+                    </div>
+                    <h4 style="margin-bottom: 0.5rem;">${product.name}</h4>
+                    <div style="color: var(--primary); font-weight: 600;">฿${product.price.toLocaleString('th-TH')}</div>
+                </div>
+                `).join('')}
             </div>
-            <h4 style="margin-bottom: 0.5rem;">${product.name}</h4>
-            <div style="color: var(--primary); font-weight: 600;">฿${product.price.toLocaleString('th-TH')}</div>
         </div>
         `).join('')}
     </div>

@@ -5,10 +5,22 @@ const lineService = require('../services/lineService');
 exports.renderPOS = async (req, res) => {
     try {
         const products = await Product.find({ stock: { $gt: 0 } }).sort({ name: 1 });
+
+        // Group products by category
+        const groupedProducts = products.reduce((acc, product) => {
+            const category = product.category || 'อื่นๆ (Others)';
+            if (!acc[category]) {
+                acc[category] = [];
+            }
+            acc[category].push(product);
+            return acc;
+        }, {});
+
         res.render('pos', {
             title: 'บันทึกการขาย (POS)',
             user: req.session,
             products,
+            groupedProducts,
             error: null,
             success: req.query.success || null
         });
