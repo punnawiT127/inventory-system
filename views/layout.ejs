@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>
-        <%= typeof title !=='undefined' ? title + ' | Inventory System' : 'Inventory System' %>
+        <%= typeof title !=='undefined' ? title + ' | Store' : 'Store' %>
     </title>
 
     <!-- PWA Settings for Mobile -->
@@ -14,7 +14,7 @@
     <link rel="apple-touch-icon" href="/images/mnd-logo.jpg">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Inventory">
+    <meta name="apple-mobile-web-app-title" content="Store">
 
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -38,9 +38,9 @@
         <nav class="navbar">
             <a href="<%= user.userRole === 'Owner' ? '/dashboard' : '/products' %>" class="nav-brand"
                 style="display: flex; align-items: center; gap: 0.5rem;">
-                <img src="/images/mnd-logo.jpg" alt="MND Logo"
-                    style="height: 32px; width: auto; border-radius: 4px; object-fit: contain;">
-                Inventory
+                <img src="/images/mnd-logo.png" alt="MND Logo"
+                    style="height: 38px; width: auto; object-fit: contain;">
+                Store
             </a>
 
             <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">
