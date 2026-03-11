@@ -178,11 +178,17 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .nav-brand {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--primary);
+  font-size: 1.5rem;
+  font-weight: 800;
   text-decoration: none;
   z-index: 50;
+  /* Metallic Gradient */
+  background: linear-gradient(135deg, #d4af37 0%, #EAB308 30%, #F97316 70%, #EA580C 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent; /* Fallback */
+  letter-spacing: -0.5px;
 }
 
 .nav-menu {
