@@ -57,9 +57,36 @@ exports.handleEvent = async (event) => {
         // Example: +10 1234567890123. Use (.+) for the barcode to allow spaces in between numbers.
         const addStockMatch = userText.match(/^\+(\d+)\s+(.+)$/);
         
+        // Command to add a new product: +สินค้า [barcode] [name] [price] [stock] [category]
+        // Example: +สินค้า 123456 น้ำเปล่า 10 50 เครื่องดื่ม
+        // Name can have spaces, regex captures greedily until numbers (price, stock)
+        const addProductMatch = userText.match(/^\+สินค้า\s+(\d+)\s+(.+?)\s+(\d+(?:\.\d+)?)\s+(\d+)(?:\s+(.+))?$/);
+        
         let replyText = '';
 
-        if (addStockMatch) {
+        if (addProductMatch) {
+            const barcode = addProductMatch[1];
+            const name = addProductMatch[2].trim();
+            const price = parseFloat(addProductMatch[3]);
+            const stock = parseInt(addProductMatch[4], 10);
+            const category = addProductMatch[5] ? addProductMatch[5].trim() : 'ทั่วไป';
+
+            const existingProduct = await Product.findOne({ code: barcode });
+
+            if (existingProduct) {
+                replyText = `❌ ไม่สามารถเพิ่มสินค้าได้\nเนื่องจากบาร์โค้ด: ${barcode} มีในระบบแล้ว (${existingProduct.name})\n\nหากต้องการสต็อกเพิ่ม พิมพ์: +จำนวน บาร์โค้ด`;
+            } else {
+                const newProduct = new Product({
+                    code: barcode,
+                    name: name,
+                    price: price,
+                    stock: stock,
+                    category: category
+                });
+                await newProduct.save();
+                replyText = `✅ เพิ่มลงระบบสำเร็จ!\n📦 ${name}\nบาร์โค้ด: ${barcode}\nหมวดหมู่: ${category}\nราคา: ฿${price.toLocaleString('th-TH')}\nสต็อกพร้อมขาย: ${stock} ชิ้น`;
+            }
+        } else if (addStockMatch) {
             const amountToAdd = parseInt(addStockMatch[1], 10);
             const barcode = addStockMatch[2].replace(/\s+/g, ''); // Strip any spaces from the scanned barcode
 
@@ -119,7 +146,7 @@ exports.handleEvent = async (event) => {
                 }
             } else {
                 // Provide a generic response if they just type normal chat
-                replyText = `สวัสดีครับ 🙏\nผมคือบอทผู้ช่วยของ MND Store\n\n🔹 พิมพ์ "ยอดขาย" เพื่อดูยอดขายวันนี้\n🔹 พิมพ์ "เช็คสต็อก" เพื่อดูรายการสินค้าใกล้หมด\n🔹 พิมพ์ "รหัสบาร์โค้ด" เพื่อเช็คข้อมูลสินค้า\n🔹 พิมพ์ "+จำนวน รหัสบาร์โค้ด" เพื่อเพิ่มสต็อก\n(เช่น +10 1234567890123)`;
+                replyText = `สวัสดีครับ 🙏\nผมคือบอทผู้ช่วยของ MND Store\n\n🔹 พิมพ์ "ยอดขาย" เพื่อดูยอดขายวันนี้\n🔹 พิมพ์ "เช็คสต็อก" เพื่อดูรายการสินค้าใกล้หมด\n🔹 พิมพ์ "รหัสบาร์โค้ด" เพื่อเช็คข้อมูลสินค้า\n🔹 พิมพ์ "+จำนวน รหัสบาร์โค้ด" เพื่อเติมสต็อก\n(เช่น +10 123456789)\n\n⭐️ สั่งเพิ่มสินค้าใหม่ผ่านแชท\nพิมพ์: +สินค้า บาร์โค้ด ชื่อสินค้า ราคา สต็อก หมวดหมู่\n(เช่น +สินค้า 999 โค้ก 15 50 เครื่องดื่ม)`;
             }
         }
 
