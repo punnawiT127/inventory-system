@@ -18,6 +18,10 @@ app.set('trust proxy', 1);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+// Register webhook BEFORE raw body parsing so LINE SDK can verify signatures
+const webhookRoute = require('./routes/webhook');
+app.use('/webhook', webhookRoute);
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
