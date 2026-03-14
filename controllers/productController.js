@@ -54,10 +54,17 @@ exports.addProduct = async (req, res) => {
 exports.updateProduct = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, category, price, stock, weight, unit } = req.body;
+        const { code, name, category, price, stock, weight, unit } = req.body;
+
+        if (code) {
+            const existing = await Product.findOne({ code, _id: { $ne: id } });
+            if (existing) {
+                return res.redirect(`/products?error=รหัสสินค้า '${code}' นี้ซ้ำกับสินค้าอื่นในระบบ (Barcode already exists)`);
+            }
+        }
 
         const updateData = {
-            name, category, price, stock, weight: weight || 0, unit: unit || 'ชิ้น'
+            code, name, category, price, stock, weight: weight || 0, unit: unit || 'ชิ้น'
         };
 
         if (['กิโลกรัม', 'กรัม', 'ขีด'].includes(updateData.unit) && (!weight || weight == 0)) {
