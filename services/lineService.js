@@ -70,7 +70,7 @@ exports.handleEvent = async (event) => {
                 await product.save();
                 replyText = `✅ เพิ่มสต็อกสำเร็จ!\nสินค้า: ${product.name}\nเพิ่ม: ${amountToAdd} ชิ้น\nคงเหลือทั้งหมด: ${product.stock} ชิ้น`;
             } else {
-                replyText = `❌ ไม่พบสินค้าที่มีบาร์โค้ด: ${barcode}\n\nอยากเพิ่มสินค้าใหม่เข้าระบบใช่ไหม?\n👉 กดที่ลิงก์นี้เพื่อเพิ่มสินค้าเลย:\nhttps://inventory-system-xx0m.onrender.com/products?addBarcode=${barcode}`;
+                replyText = `❌ ไม่พบสินค้าที่มีบาร์โค้ด: ${barcode}\n\nอยากเพิ่มสินค้าใหม่เข้าระบบใช่ไหม?\n👉 กดที่ลิงก์นี้เพื่อเพิ่มสินค้าเลย:\nhttps://inventory-system-tkh6.onrender.com/products?addBarcode=${barcode}`;
             }
         } else if (userText === 'ยอดขาย') {
             const Sale = require('../models/Sale');
@@ -115,7 +115,7 @@ exports.handleEvent = async (event) => {
                 if (product) {
                     replyText = `📦 ข้อมูลสินค้า:\nชื่อ: ${product.name}\nรหัส: ${product.code}\nหมวดหมู่: ${product.category}\nราคา: ฿${product.price.toLocaleString('th-TH')}\nคงเหลือ: ${product.stock} ชิ้น\n\n💡 ต้องการเพิ่มสต็อก?\nพิมพ์: +จำนวน บาร์โค้ด\n(เช่น +10 ${product.code})`;
                 } else {
-                    replyText = `❌ ไม่พบสินค้าบาร์โค้ด: ${cleanBarcode}\n\nอยากลงทะเบียนสินค้าใหม่เข้าระบบใช่ไหม?\n👉 กดลิงก์ด้านล่างเพื่อเพิ่มสินค้าเลย:\nhttps://inventory-system-xx0m.onrender.com/products?addBarcode=${cleanBarcode}`;
+                    replyText = `❌ ไม่พบสินค้าบาร์โค้ด: ${cleanBarcode}\n\nอยากลงทะเบียนสินค้าใหม่เข้าระบบใช่ไหม?\n👉 กดลิงก์ด้านล่างเพื่อเพิ่มสินค้าเลย:\nhttps://inventory-system-tkh6.onrender.com/products?addBarcode=${cleanBarcode}`;
                 }
             } else {
                 // Provide a generic response if they just type normal chat
