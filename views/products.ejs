@@ -1,15 +1,22 @@
 <%- include('layout', { title: 'จัดการคลังสินค้า' , user: user, body: ` <div class="card" style="margin-bottom: 2rem;">
     <div class="flex items-center" style="justify-content: space-between; margin-bottom: 1.5rem;">
         <h2>รายการสินค้าคงคลัง (Inventory)</h2>
-        <button class="btn btn-primary" onclick="openAddModal()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                style="margin-right:0.5rem;">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            เพิ่มสินค้าใหม่
-        </button>
+        <div style="display: flex; gap: 0.5rem;">
+            <button class="btn" style="background-color: var(--bg-input); color: var(--text-main); display: flex; align-items: center; gap: 0.5rem;" onclick="openScanner()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 7V4h3"></path><path d="M20 7V4h-3"></path><path d="M4 17v3h3"></path><path d="M20 17v3h-3"></path><rect x="7" y="10" width="10" height="4" rx="1"></rect>
+                </svg>
+                สแกนกล้อง
+            </button>
+            <button class="btn btn-primary" onclick="openAddModal()" style="display: flex; align-items: center; gap: 0.5rem;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                เพิ่มสินค้าใหม่
+            </button>
+        </div>
     </div>
 
     ${success ? `
@@ -261,6 +268,20 @@
             </form>
         </div>
     </div>
+    <!-- Scanner Modal -->
+    <div class="modal-overlay" id="scannerModal">
+        <div class="modal" style="max-width: 600px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3>สแกนบาร์โค้ด</h3>
+                <button onclick="closeScanner()"
+                    style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</button>
+            </div>
+            <div id="reader" style="width: 100%; min-height: 300px;"></div>
+            <p class="text-center text-muted" style="margin-top: 1rem; font-size: 0.875rem;">
+                นำกล้องส่องไปที่บาร์โค้ดสินค้าเพื่อค้นหาหรือเพิ่มใหม่
+            </p>
+        </div>
+    </div>
 
     <script>
         function openAddModal(prefillCode = '') {
@@ -295,6 +316,79 @@
                 openAddModal(addBarcode);
             }
         });
+
+        // Scanner Logic
+        let html5QrcodeScanner = null;
+
+        function openScanner() {
+            document.getElementById('scannerModal').classList.add('modal-active');
+            
+            if (!html5QrcodeScanner) {
+                html5QrcodeScanner = new Html5QrcodeScanner(
+                    "reader",
+                    { fps: 10, qrbox: {width: 250, height: 150}, aspectRatio: 1.0 },
+                    /* verbose= */ false
+                );
+                html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+            }
+        }
+
+        function closeScanner() {
+            document.getElementById('scannerModal').classList.remove('modal-active');
+            if (html5QrcodeScanner) {
+                html5QrcodeScanner.clear().then(() => {
+                    html5QrcodeScanner = null;
+                }).catch(error => {
+                    console.error("Failed to clear html5QrcodeScanner. ", error);
+                });
+            }
+        }
+
+        async function onScanSuccess(decodedText, decodedResult) {
+            // Stop scanning and close modal
+            closeScanner();
+            
+            // Show loading
+            Swal.fire({
+                title: 'กำลังค้นหา...',
+                text: 'รหัส: ' + decodedText,
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Call API
+            try {
+                const response = await fetch('/api/products/' + decodedText);
+                const data = await response.json();
+                
+                Swal.close();
+                
+                if (data.success && data.product) {
+                    // Open edit modal
+                    const p = data.product;
+                    openEditModal(p._id, p.code, p.name, p.category, p.price, p.stock, p.weight, p.unit);
+                } else {
+                    // Not found, open add modal
+                    openAddModal(decodedText);
+                    Swal.fire({
+                        title: 'ไม่พบสินค้า',
+                        text: 'ไม่พบสินค้ารหัสนี้ในระบบ กรุณาเพิ่มสินค้าใหม่',
+                        icon: 'info',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }
+            } catch (err) {
+                console.error(err);
+                Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
+            }
+        }
+
+        function onScanFailure(error) {
+            // handle scan failure, usually better to ignore and keep scanning
+        }
 
         // Handle URL errors/success parameter alerts fading after 4s
         setTimeout(() => {

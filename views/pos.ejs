@@ -13,6 +13,15 @@
     flex; align-items: center; justify-content: center; cursor: pointer; } .cart-total { font-size: 1.5rem; font-weight:
     700; display: flex; justify-content: space-between; margin-bottom: 1rem; } @media (max-width: 768px) { .pos-container { flex-direction: column; } .pos-cart { position: static; max-height: none; } } `, body: ` <div class="pos-container">
     <div class="pos-products" style="display: block;">
+        <div style="margin-bottom: 2rem;">
+            <button class="btn btn-primary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 1rem; font-size: 1.1rem; border-radius: var(--radius-lg); background-color: var(--secondary);" onclick="openScanner()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 7V4h3"></path><path d="M20 7V4h-3"></path><path d="M4 17v3h3"></path><path d="M20 17v3h-3"></path><rect x="7" y="10" width="10" height="4" rx="1"></rect>
+                </svg>
+                สแกนบาร์โค้ดสินค้า
+            </button>
+        </div>
+
         ${products.length === 0 ? `
         <div
             style="text-align: center; padding: 3rem; background: var(--bg-card); border-radius: var(--radius-lg);">
@@ -62,6 +71,19 @@
         </button>
     </div>
     </div>
+    <div class="modal-overlay" id="scannerModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 50;">
+        <div class="modal" style="background: var(--bg-card); width: 100%; max-width: 600px; border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow-lg);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3>สแกนบาร์โค้ด (POS)</h3>
+                <button onclick="closeScanner()"
+                    style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</button>
+            </div>
+            <div id="reader" style="width: 100%; min-height: 300px;"></div>
+            <p class="text-center text-muted" style="margin-top: 1rem; font-size: 0.875rem;">
+                นำกล้องส่องไปที่บาร์โค้ดเพื่อเพิ่มลงตะกร้าอัตโนมัติ
+            </p>
+        </div>
+    </div>
 
     <script>
         let cart = {};
@@ -110,17 +132,16 @@
 
                 const itemEl = document.createElement('div');
                 itemEl.className = 'cart-item';
-                itemEl.innerHTML = \`
-                        <div class="cart-item-info">
-                            <div style="font-weight: 500; font-size: 0.875rem;">\${item.name}</div>
-                            <div style="font-size: 0.75rem; color: var(--text-muted);">฿\${item.price.toLocaleString('th-TH')}</div>
-                        </div>
-                        <div class="cart-item-qty">
-                            <button class="qty-btn" onclick="updateQty('\${id}', -1)">-</button>
-                            <span style="font-weight: 600; width: 20px; text-align: center;">\${item.quantity}</span>
-                            <button class="qty-btn" onclick="updateQty('\${id}', 1)">+</button>
-                        </div>
-                    \`;
+                itemEl.innerHTML = 
+                        '<div class="cart-item-info">' +
+                            '<div style="font-weight: 500; font-size: 0.875rem;">' + item.name + '</div>' +
+                            '<div style="font-size: 0.75rem; color: var(--text-muted);">฿' + item.price.toLocaleString('th-TH') + '</div>' +
+                        '</div>' +
+                        '<div class="cart-item-qty">' +
+                            '<button class="qty-btn" onclick="updateQty(\'' + id + '\', -1)">-</button>' +
+                            '<span style="font-weight: 600; width: 20px; text-align: center;">' + item.quantity + '</span>' +
+                            '<button class="qty-btn" onclick="updateQty(\'' + id + '\', 1)">+</button>' +
+                        '</div>';
                     cartEl.appendChild(itemEl);
                 }
 
@@ -185,6 +206,106 @@
                     btn.disabled = false;
                     btn.textContent = 'ชำระเงิน / ยืนยันการทำรายการ';
                 }
+            }
+
+            // Scanner Logic
+            let html5QrcodeScanner = null;
+
+            function openScanner() {
+                document.getElementById('scannerModal').style.display = 'flex';
+                
+                if (!html5QrcodeScanner) {
+                    html5QrcodeScanner = new Html5QrcodeScanner(
+                        "reader",
+                        { fps: 10, qrbox: {width: 250, height: 150}, aspectRatio: 1.0 },
+                        /* verbose= */ false
+                    );
+                    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+                }
+            }
+
+            function closeScanner() {
+                document.getElementById('scannerModal').style.display = 'none';
+                if (html5QrcodeScanner) {
+                    html5QrcodeScanner.clear().then(() => {
+                        html5QrcodeScanner = null;
+                    }).catch(error => {
+                        console.error("Failed to clear html5QrcodeScanner. ", error);
+                    });
+                }
+            }
+
+            // Optional: Debounce to prevent rapid multiple additions of the same barcode
+            let isScanning = false;
+
+            async function onScanSuccess(decodedText, decodedResult) {
+                if (isScanning) return;
+                isScanning = true;
+                
+                // Show loading
+                document.getElementById('scannerModal').style.display = 'none'; // visually hide modal temporarily
+                Swal.fire({
+                    title: 'กำลังตรวจสอบ...',
+                    text: 'บาร์โค้ด: ' + decodedText,
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                try {
+                    const response = await fetch('/api/products/' + decodedText);
+                    const data = await response.json();
+                    
+                    if (data.success && data.product) {
+                        const p = data.product;
+                        if (p.stock <= 0) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'สินค้าหมด',
+                                text: p.name + ' ไม่มีในสต็อก',
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => {
+                                document.getElementById('scannerModal').style.display = 'flex';
+                                isScanning = false;
+                            });
+                        } else {
+                            addToCart(p._id, p.name, p.price, p.stock, p.unit);
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'เพิ่มลงตะกร้าแล้ว',
+                                text: p.name,
+                                timer: 1000,
+                                showConfirmButton: false
+                            }).then(() => {
+                                document.getElementById('scannerModal').style.display = 'flex';
+                                isScanning = false;
+                            });
+                        }
+                    } else {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'ไม่พบสินค้า',
+                            text: 'ไม่พบสินค้ารหัสนี้ในระบบ',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            document.getElementById('scannerModal').style.display = 'flex';
+                            isScanning = false;
+                        });
+                    }
+                } catch (err) {
+                    console.error(err);
+                    Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อระบบได้', 'error').then(() => {
+                        document.getElementById('scannerModal').style.display = 'flex';
+                        isScanning = false;
+                    });
+                }
+            }
+
+            function onScanFailure(error) {
+                // Ignore failure and continue scanning
             }
     </script>
     `

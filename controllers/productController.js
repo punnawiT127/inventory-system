@@ -91,3 +91,19 @@ exports.deleteProduct = async (req, res) => {
         res.redirect('/products?error=เกิดข้อผิดพลาดในการลบสินค้า (Error deleting product)');
     }
 };
+
+// API Endpoint to fetch a product by code (for Barcode Scanner)
+exports.getProductByCode = async (req, res) => {
+    try {
+        const { code } = req.params;
+        const product = await Product.findOne({ code });
+        if (product) {
+            res.json({ success: true, product });
+        } else {
+            res.json({ success: false, message: 'ไม่พบสินค้ารหัสนี้ในระบบ' });
+        }
+    } catch (err) {
+        console.error('Error fetching product by code:', err);
+        res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดบนเซิร์ฟเวอร์' });
+    }
+};
