@@ -264,8 +264,12 @@
     </div>
 
     <script>
-        function openAddModal() {
+        function openAddModal(prefillCode = '') {
             document.getElementById('addModal').classList.add('modal-active');
+            if (prefillCode) {
+                document.querySelector('input[name="code"]').value = prefillCode;
+                setTimeout(() => document.querySelector('input[name="name"]').focus(), 100);
+            }
         }
 
         function openEditModal(id, code, name, category, price, stock, weight, unit) {
@@ -283,6 +287,15 @@
         function closeModal(id) {
             document.getElementById(id).classList.remove('modal-active');
         }
+
+        // Handle URL parameter for pre-filling barcode from LINE
+        window.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const addBarcode = params.get('addBarcode');
+            if (addBarcode) {
+                openAddModal(addBarcode);
+            }
+        });
 
         // Handle URL errors/success parameter alerts fading after 4s
         setTimeout(() => {
