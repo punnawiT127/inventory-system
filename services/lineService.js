@@ -57,19 +57,45 @@ exports.handleEvent = async (event) => {
         // Example: +10 1234567890123. Use (.+) for the barcode to allow spaces in between numbers.
         const addStockMatch = userText.match(/^\+(\d+)\s+(.+)$/);
         
-        // Command to add a new product: +สินค้า [barcode] [name] [price] [stock] [category]
-        // Example: +สินค้า 123456 น้ำเปล่า 10 50 เครื่องดื่ม
-        // Name can have spaces, regex captures greedily until numbers (price, stock)
-        const addProductMatch = userText.match(/^\+สินค้า\s+(\d+)\s+(.+?)\s+(\d+(?:\.\d+)?)\s+(\d+)(?:\s+(.+))?$/);
+        // Command to add a new product: +สินค้า [barcode] [name] [price] [stock] [category] [unit] [weight]
+        // Example 1: +สินค้า 123456 น้ำเปล่า 10 50 เครื่องดื่ม
+        // Example 2: +สินค้า 789 หมูสามชั้น 150 10 ของสด กิโลกรัม 10
+        // Name can have spaces. We capture up to 7 groups.
+        const addProductParts = userText.split(/\s+/);
+        let addProductMatch = null;
+        
+        if (addProductParts[0] === '+สินค้า' && addProductParts.length >= 5) {
+            addProductMatch = {
+                barcode: addProductParts[1],
+                name: addProductParts.slice(2, addProductParts.length - (addProductParts.length > 5 ? addProductParts.length - 3 : 2)).filter(p => isNaN(p)).join(' '), // Extract name from parts before numbers
+            };
+            
+            // Find the index where price starts (first number after name)
+            let priceIdx = 2;
+            for(let i=2; i<addProductParts.length; i++) {
+                if(!isNaN(parseFloat(addProductParts[i]))) {
+                    priceIdx = i;
+                    break;
+                }
+            }
+            
+            addProductMatch.name = addProductParts.slice(2, priceIdx).join(' ');
+            addProductMatch.price = parseFloat(addProductParts[priceIdx]);
+            addProductMatch.stock = parseInt(addProductParts[priceIdx+1], 10);
+            addProductMatch.category = addProductParts[priceIdx+2] || 'ทั่วไป';
+            addProductMatch.unit = addProductParts[priceIdx+3] || 'ชิ้น';
+            addProductMatch.weight = addProductParts[priceIdx+4] ? parseFloat(addProductParts[priceIdx+4]) : 0;
+            
+            // If unit is weight-based but no weight is provided, default weight to stock
+            if (['กิโลกรัม', 'กรัม', 'ขีด'].includes(addProductMatch.unit) && addProductMatch.weight === 0) {
+                addProductMatch.weight = addProductMatch.stock;
+            }
+        }
         
         let replyText = '';
 
-        if (addProductMatch) {
-            const barcode = addProductMatch[1];
-            const name = addProductMatch[2].trim();
-            const price = parseFloat(addProductMatch[3]);
-            const stock = parseInt(addProductMatch[4], 10);
-            const category = addProductMatch[5] ? addProductMatch[5].trim() : 'ทั่วไป';
+        if (addProductMatch && !isNaN(addProductMatch.price) && !isNaN(addProductMatch.stock)) {
+            const { barcode, name, price, stock, category, unit, weight } = addProductMatch;
 
             const existingProduct = await Product.findOne({ code: barcode });
 
@@ -81,10 +107,14 @@ exports.handleEvent = async (event) => {
                     name: name,
                     price: price,
                     stock: stock,
-                    category: category
+                    category: category,
+                    unit: unit,
+                    weight: weight
                 });
                 await newProduct.save();
-                replyText = `✅ เพิ่มลงระบบสำเร็จ!\n📦 ${name}\nบาร์โค้ด: ${barcode}\nหมวดหมู่: ${category}\nราคา: ฿${price.toLocaleString('th-TH')}\nสต็อกพร้อมขาย: ${stock} ชิ้น`;
+                
+                let weightText = weight > 0 ? `\nน้ำหนักรวม: ${weight} กก.` : '';
+                replyText = `✅ เพิ่มลงระบบสำเร็จ!\n📦 ${name}\nรหัส: ${barcode}\nหมวดหมู่: ${category}\nราคา: ฿${price.toLocaleString('th-TH')}\nสต็อก: ${stock} ${unit}${weightText}`;
             }
         } else if (addStockMatch) {
             const amountToAdd = parseInt(addStockMatch[1], 10);
@@ -146,7 +176,7 @@ exports.handleEvent = async (event) => {
                 }
             } else {
                 // Provide a generic response if they just type normal chat
-                replyText = `สวัสดีครับ 🙏\nผมคือบอทผู้ช่วยของ MND Store\n\n🔹 พิมพ์ "ยอดขาย" เพื่อดูยอดขายวันนี้\n🔹 พิมพ์ "เช็คสต็อก" เพื่อดูรายการสินค้าใกล้หมด\n🔹 พิมพ์ "รหัสบาร์โค้ด" เพื่อเช็คข้อมูลสินค้า\n🔹 พิมพ์ "+จำนวน รหัสบาร์โค้ด" เพื่อเติมสต็อก\n(เช่น +10 123456789)\n\n⭐️ สั่งเพิ่มสินค้าใหม่ผ่านแชท\nพิมพ์: +สินค้า บาร์โค้ด ชื่อสินค้า ราคา สต็อก หมวดหมู่\n(เช่น +สินค้า 999 โค้ก 15 50 เครื่องดื่ม)`;
+                replyText = `สวัสดีครับ 🙏\nผมคือบอทผู้ช่วยของ MND Store\n\n🔹 พิมพ์ "ยอดขาย" เพื่อดูยอดขายวันนี้\n🔹 พิมพ์ "เช็คสต็อก" เพื่อดูรายการสินค้าใกล้หมด\n🔹 พิมพ์ "รหัสบาร์โค้ด" เพื่อเช็คข้อมูลสินค้า\n🔹 พิมพ์ "+จำนวน รหัสบาร์โค้ด" เพื่อเติมสต็อก\n(เช่น +10 123456789)\n\n⭐️ สั่งเพิ่มสินค้าผ่านแชท (เรียงตามลำดับ)\n+สินค้า [รหัส] [ชื่อ] [ราคา] [สต็อก] [หมวดหมู่] [หน่วย] [น้ำหนัก]\n(ตัวอย่าง: +สินค้า 999 หมู 150 10 ของสด กิโลกรัม 10)`;
             }
         }
 
