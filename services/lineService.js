@@ -53,18 +53,35 @@ exports.handleEvent = async (event) => {
         // if this file is required very early.
         const Product = require('../models/Product');
         
-        // Check if the input is a 13-digit barcode or product code format
-        // For simplicity, we just query the database to see if a product matches this code EXACTLY
-        const product = await Product.findOne({ code: userText });
-
+        // Check if the input is an "add stock" command: +[amount] [barcode]
+        // Example: +10 1234567890123
+        const addStockMatch = userText.match(/^\+(\d+)\s+(\d+)$/);
+        
         let replyText = '';
 
-        if (product) {
-            replyText = `📦 ข้อมูลสินค้า:\nชื่อ: ${product.name}\nรหัส: ${product.code}\nหมวดหมู่: ${product.category}\nราคา: ฿${product.price.toLocaleString('th-TH')}\nคงเหลือ: ${product.stock} ชิ้น`;
+        if (addStockMatch) {
+            const amountToAdd = parseInt(addStockMatch[1], 10);
+            const barcode = addStockMatch[2];
+
+            const product = await Product.findOne({ code: barcode });
+
+            if (product) {
+                product.stock += amountToAdd;
+                await product.save();
+                replyText = `✅ เพิ่มสต็อกสำเร็จ!\nสินค้า: ${product.name}\nเพิ่ม: ${amountToAdd} ชิ้น\nคงเหลือทั้งหมด: ${product.stock} ชิ้น`;
+            } else {
+                replyText = `❌ ไม่พบสินค้าที่มีบาร์โค้ด: ${barcode}`;
+            }
         } else {
-            // Provide a generic response if they just type normal chat
-            // (You can comment this out if you don't want the bot to reply to non-barcode messages)
-            replyText = `สวัสดีครับ 🙏\nผมคือบอทผู้ช่วยของ MND Store\n\nหากต้องการเช็คสต็อกสินค้า ให้พิมพ์ "รหัสบาร์โค้ด" ส่งมาได้เลยครับ 📦`;
+            // Check if it's just a barcode to query info
+            const product = await Product.findOne({ code: userText });
+
+            if (product) {
+                replyText = `📦 ข้อมูลสินค้า:\nชื่อ: ${product.name}\nรหัส: ${product.code}\nหมวดหมู่: ${product.category}\nราคา: ฿${product.price.toLocaleString('th-TH')}\nคงเหลือ: ${product.stock} ชิ้น\n\n💡 ต้องการเพิ่มสต็อก?\nพิมพ์: +จำนวน บาร์โค้ด\n(เช่น +10 ${product.code})`;
+            } else {
+                // Provide a generic response if they just type normal chat
+                replyText = `สวัสดีครับ 🙏\nผมคือบอทผู้ช่วยของ MND Store\n\n- เช็คสต็อก: พิมพ์ "รหัสบาร์โค้ด"\n- เพิ่มสต็อก: พิมพ์ "+จำนวน รหัสบาร์โค้ด"\n(เช่น +10 1234567890123)`;
+            }
         }
 
         return client.replyMessage(event.replyToken, {
