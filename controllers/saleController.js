@@ -125,7 +125,22 @@ exports.processSale = async (req, res) => {
 
 exports.renderHistory = async (req, res) => {
     try {
-        const sales = await Sale.find()
+        const { startDate, endDate } = req.query;
+        let query = {};
+
+        if (startDate || endDate) {
+            query.date = {};
+            if (startDate) {
+                query.date.$gte = new Date(startDate);
+            }
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                query.date.$lte = end;
+            }
+        }
+
+        const sales = await Sale.find(query)
             .populate('soldBy', 'username')
             .populate('items.product', 'name code')
             .sort({ date: -1 });
@@ -133,7 +148,8 @@ exports.renderHistory = async (req, res) => {
         res.render('history', {
             title: 'ประวัติการขาย (Sales History)',
             user: req.session,
-            sales
+            sales,
+            query: req.query
         });
     } catch (err) {
         console.error('History error:', err);
