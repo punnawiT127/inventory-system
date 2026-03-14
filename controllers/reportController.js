@@ -3,19 +3,36 @@ const Product = require('../models/Product');
 
 exports.renderDashboard = async (req, res) => {
     try {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        const { startDate, endDate } = req.query;
+        let dateQuery = {};
+        let isFiltered = false;
 
-        const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        if (startDate || endDate) {
+            isFiltered = true;
+            dateQuery.$gte = startDate ? new Date(startDate) : new Date(0);
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                dateQuery.$lte = end;
+            }
+        } else {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            dateQuery.$gte = today;
+        }
 
-        // Aggregate today's sales
-        const todaySales = await Sale.aggregate([
-            { $match: { date: { $gte: today } } },
+        const firstDayOfMonth = new Date();
+        firstDayOfMonth.setDate(1);
+        firstDayOfMonth.setHours(0, 0, 0, 0);
+
+        // Aggregate today's or filtered sales
+        const filteredSales = await Sale.aggregate([
+            { $match: { date: dateQuery } },
             { $group: { _id: null, total: { $sum: '$totalAmount' }, count: { $sum: 1 } } }
         ]);
 
-        const dailyTotal = todaySales.length > 0 ? todaySales[0].total : 0;
-        const dailyCount = todaySales.length > 0 ? todaySales[0].count : 0;
+        const filteredTotal = filteredSales.length > 0 ? filteredSales[0].total : 0;
+        const filteredCount = filteredSales.length > 0 ? filteredSales[0].count : 0;
 
         // Aggregate monthly sales
         const monthSales = await Sale.aggregate([
@@ -44,12 +61,14 @@ exports.renderDashboard = async (req, res) => {
         res.render('dashboard', {
             title: 'หน้าหลัก (Dashboard)',
             user: req.session,
-            dailyTotal,
-            dailyCount,
+            filteredTotal,
+            filteredCount,
             monthlyTotal,
             lowStockProducts,
             recentSales,
-            topProducts
+            topProducts,
+            query: req.query,
+            isFiltered
         });
     } catch (err) {
         console.error('Dashboard Error:', err);

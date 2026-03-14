@@ -13,7 +13,25 @@
     font-size: 1.125rem; font-weight: 600; margin-bottom: 1.5rem; color: var(--text-main); display: flex; align-items:
     center; justify-content: space-between; } .list-item { display: flex; justify-content: space-between; align-items:
     center; padding: 1rem 0; border-bottom: 1px solid var(--border); } .list-item:last-child { border-bottom: none; } `,
-    body: ` <div class="dashboard-stats">
+    body: ` <div style="background: var(--bg-card); border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: var(--shadow-sm); border: 1px solid var(--border); margin-bottom: 2rem;">
+    <h3 style="margin-top: 0; margin-bottom: 1rem; font-size: 1.125rem; color: var(--text-main);">คัดกรองยอดขาย</h3>
+    <form method="GET" action="/dashboard" style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end;">
+        <div style="flex: 1; min-width: 150px;">
+            <label for="startDate" style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem; font-weight: 500;">ตั้งแต่วันที่</label>
+            <input type="date" id="startDate" name="startDate" value="${query && query.startDate ? query.startDate : ''}" class="form-control" style="padding: 0.5rem; height: 40px;">
+        </div>
+        <div style="flex: 1; min-width: 150px;">
+            <label for="endDate" style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem; font-weight: 500;">ถึงวันที่</label>
+            <input type="date" id="endDate" name="endDate" value="${query && query.endDate ? query.endDate : ''}" class="form-control" style="padding: 0.5rem; height: 40px;">
+        </div>
+        <div>
+            <button type="submit" class="btn btn-primary" style="height: 40px; padding: 0 1.5rem;">คัดกรอง</button>
+            <a href="/dashboard" class="btn btn-secondary" style="height: 40px; padding: 0 1.5rem; margin-left: 0.5rem;">รีเซต</a>
+        </div>
+    </form>
+</div>
+
+<div class="dashboard-stats">
     <div class="stat-card card-interactive">
         <div class="stat-icon stat-primary">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -24,8 +42,8 @@
             </svg>
         </div>
         <div>
-            <div class="stat-value">฿${dailyTotal.toLocaleString('th-TH')}</div>
-            <div class="stat-label">ยอดขายวันนี้ (${dailyCount} รายการ)</div>
+            <div class="stat-value">฿${filteredTotal.toLocaleString('th-TH')}</div>
+            <div class="stat-label">${isFiltered ? 'ยอดขายตามช่วงเวลา' : 'ยอดขายวันนี้'} (${filteredCount} รายการ)</div>
         </div>
     </div>
 

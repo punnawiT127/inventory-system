@@ -145,10 +145,13 @@ exports.renderHistory = async (req, res) => {
             .populate('items.product', 'name code')
             .sort({ date: -1 });
 
+        const totalSum = sales.reduce((acc, sale) => acc + sale.totalAmount, 0);
+
         res.render('history', {
             title: 'ประวัติการขาย (Sales History)',
             user: req.session,
             sales,
+            totalSum,
             query: req.query
         });
     } catch (err) {
