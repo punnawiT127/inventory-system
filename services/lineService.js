@@ -72,6 +72,38 @@ exports.handleEvent = async (event) => {
             } else {
                 replyText = `❌ ไม่พบสินค้าที่มีบาร์โค้ด: ${barcode}\n\nอยากเพิ่มสินค้าใหม่เข้าระบบใช่ไหม?\n👉 กดที่ลิงก์นี้เพื่อเพิ่มสินค้าเลย:\nhttps://inventory-system-xx0m.onrender.com/products?addBarcode=${barcode}`;
             }
+        } else if (userText === 'ยอดขาย') {
+            const Sale = require('../models/Sale');
+            
+            // Get today's start and end date
+            const startOfDay = new Date();
+            startOfDay.setHours(0, 0, 0, 0);
+            
+            const endOfDay = new Date();
+            endOfDay.setHours(23, 59, 59, 999);
+
+            const todaysSales = await Sale.find({
+                date: { $gte: startOfDay, $lte: endOfDay }
+            });
+
+            const totalAmount = todaysSales.reduce((sum, sale) => sum + sale.totalAmount, 0);
+            const totalBills = todaysSales.length;
+
+            replyText = `📊 สรุปยอดขายวันนี้\nจำนวนบิล: ${totalBills} บิล\nยอดรวม: ฿${totalAmount.toLocaleString('th-TH')}`;
+            
+        } else if (userText === 'เช็คสต็อก' || userText === 'สต็อก' || userText === 'สต๊อก') {
+            const lowStockProducts = await Product.find({ stock: { $lte: 5 } }).limit(10);
+            
+            if (lowStockProducts.length > 0) {
+                replyText = `⚠️ รายการสินค้าใกล้หมด (สต็อก <= 5):\n\n`;
+                lowStockProducts.forEach(p => {
+                    replyText += `- ${p.name}\n  เหลือ: ${p.stock} ${p.unit || 'ชิ้น'}\n`;
+                });
+                replyText += `\n(แสดงสูงสุด 10 รายการ)`;
+            } else {
+                const totalProducts = await Product.countDocuments();
+                replyText = `✅ สต็อกสินค้าปกติทั้งหมด\nมีสินค้าในระบบทั้งหมด: ${totalProducts} รายการ`;
+            }
         } else {
             // Check if it's just a barcode to query info (Strip spaces first!)
             const cleanBarcode = userText.replace(/\s+/g, '');
@@ -87,7 +119,7 @@ exports.handleEvent = async (event) => {
                 }
             } else {
                 // Provide a generic response if they just type normal chat
-                replyText = `สวัสดีครับ 🙏\nผมคือบอทผู้ช่วยของ MND Store\n\n- เช็คสต็อก: พิมพ์ "รหัสบาร์โค้ด"\n- เพิ่มสต็อก: พิมพ์ "+จำนวน รหัสบาร์โค้ด"\n(เช่น +10 1234567890123)`;
+                replyText = `สวัสดีครับ 🙏\nผมคือบอทผู้ช่วยของ MND Store\n\n🔹 พิมพ์ "ยอดขาย" เพื่อดูยอดขายวันนี้\n🔹 พิมพ์ "เช็คสต็อก" เพื่อดูรายการสินค้าใกล้หมด\n🔹 พิมพ์ "รหัสบาร์โค้ด" เพื่อเช็คข้อมูลสินค้า\n🔹 พิมพ์ "+จำนวน รหัสบาร์โค้ด" เพื่อเพิ่มสต็อก\n(เช่น +10 1234567890123)`;
             }
         }
 
