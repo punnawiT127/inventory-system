@@ -173,8 +173,8 @@
     </div>
 
     <script>
-        // Inject recentSales data so JS can access it without an API call
-        const recentSalesData = <%- JSON.stringify(recentSales) %>;
+        // Inject recentSales data safely using URI encoding to prevent syntax errors with quotes/slashes
+        const recentSalesData = JSON.parse(decodeURIComponent('<%- encodeURIComponent(JSON.stringify(recentSales)) %>'));
 
         function openSaleModal(saleId) {
             const sale = recentSalesData.find(s => s._id === saleId);
