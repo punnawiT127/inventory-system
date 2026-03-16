@@ -48,7 +48,7 @@
             <tbody>
                 ${products.length === 0 ? `
                 <tr>
-                    <td colspan="6" class="text-center text-muted" style="padding: 2rem;">
+                    <td colspan="8" class="text-center text-muted" style="padding: 2rem;">
                         ไม่มีข้อมูลสินค้า (No products available)
                     </td>
                 </tr>
@@ -79,11 +79,11 @@
                     <td style="padding: 1rem; text-align: center;">
                         <button class="btn"
                             style="background-color: var(--bg-input); color: var(--text-main); padding: 0.5rem; font-size: 0.875rem;"
-                            onclick="openEditModal('${product._id}', '${product.code}', '${product.name.replace(/'/g, "\\\\'")}', '${product.category}', '${product.price}', '${product.stock}', '${product.weight}', '${product.unit || 'ชิ้น'}')">
+                            onclick="openEditModal('${product._id}')">
                             แก้ไข
                         </button>
 
-                        ${user.role === 'Owner' || user.userRole === 'Owner' ? `
+                        ${(user.role === 'Owner' || user.userRole === 'Owner') ? `
                         <form action="/products/delete/${product._id}" method="POST" style="display:inline;"
                             onsubmit="return confirm('ยืนยันการลบสินค้า \`${product.name}\` ?');">
                             <button type="submit" class="btn"
@@ -100,33 +100,13 @@
     </div>
     </div>
 
-    <!-- Modal CSS directly injected to keep it simple -->
+    <!-- Modal CSS -->
     <style>
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 50;
-        }
-
-        .modal {
-            background: var(--bg-card);
-            width: 100%;
-            max-width: 500px;
-            border-radius: var(--radius-lg);
-            padding: 2rem;
-            box-shadow: var(--shadow-lg);
-        }
-
-        .modal-active {
-            display: flex;
-        }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); display: none; align-items: center; justify-content: center; z-index: 50; }
+        .modal { background: var(--bg-card); width: 100%; max-width: 500px; border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow-lg); }
+        .modal-active { display: flex; }
+        .form-group { margin-bottom: 1rem; }
+        .form-label { display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.875rem; }
     </style>
 
     <!-- Add Product Modal -->
@@ -134,8 +114,7 @@
         <div class="modal">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                 <h3>เพิ่มสินค้าใหม่</h3>
-                <button onclick="closeModal('addModal')"
-                    style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</button>
+                <button onclick="closeModal('addModal')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</button>
             </div>
             <form action="/products/add" method="POST">
                 <div class="form-group">
@@ -191,8 +170,7 @@
                     </div>
                 </div>
                 <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1rem;">
-                    <button type="button" class="btn" style="background-color: var(--bg-input);"
-                        onclick="closeModal('addModal')">ยกเลิก</button>
+                    <button type="button" class="btn" style="background-color: var(--bg-input);" onclick="closeModal('addModal')">ยกเลิก</button>
                     <button type="submit" class="btn btn-primary">บันทึกสินค้า</button>
                 </div>
             </form>
@@ -204,8 +182,7 @@
         <div class="modal">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                 <h3>แก้ไขข้อมูลสินค้า</h3>
-                <button onclick="closeModal('editModal')"
-                    style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</button>
+                <button onclick="closeModal('editModal')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</button>
             </div>
             <form id="editForm" method="POST">
                 <div class="form-group">
@@ -219,7 +196,6 @@
                 <div class="form-group">
                     <label class="form-label">หมวดหมู่ (Category)</label>
                     <select name="category" id="editCategory" class="form-control" required>
-                        <option value="" disabled>เลือกหมวดหมู่</option>
                         <option value="อาหารและของกิน 🍜">อาหารและของกิน 🍜</option>
                         <option value="เครื่องดื่ม 🥤">เครื่องดื่ม 🥤</option>
                         <option value="ของใช้ในบ้าน 🏠">ของใช้ในบ้าน 🏠</option>
@@ -261,151 +237,105 @@
                     </div>
                 </div>
                 <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1rem;">
-                    <button type="button" class="btn" style="background-color: var(--bg-input);"
-                        onclick="closeModal('editModal')">ยกเลิก</button>
+                    <button type="button" class="btn" style="background-color: var(--bg-input);" onclick="closeModal('editModal')">ยกเลิก</button>
                     <button type="submit" class="btn btn-primary">บันทึกการเปลี่ยนแปลง</button>
                 </div>
             </form>
         </div>
     </div>
+
     <!-- Scanner Modal -->
     <div class="modal-overlay" id="scannerModal">
         <div class="modal" style="max-width: 600px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                 <h3>สแกนบาร์โค้ด</h3>
-                <button onclick="closeScanner()"
-                    style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</button>
+                <button onclick="closeScanner()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</button>
             </div>
             <div id="reader" style="width: 100%; min-height: 300px;"></div>
-            <p class="text-center text-muted" style="margin-top: 1rem; font-size: 0.875rem;">
-                นำกล้องส่องไปที่บาร์โค้ดสินค้าเพื่อค้นหาหรือเพิ่มใหม่
-            </p>
+            <p class="text-center text-muted" style="margin-top: 1rem; font-size: 0.875rem;">นำกล้องส่องไปที่บาร์โค้ดสินค้าเพื่อค้นหาหรือเพิ่มใหม่</p>
         </div>
     </div>
+`,
+extraJs: `
+    const productsData = ` + JSON.stringify(products) + `;
 
-    <script>
-        function openAddModal(prefillCode = '') {
-            document.getElementById('addModal').classList.add('modal-active');
-            if (prefillCode) {
-                document.querySelector('input[name="code"]').value = prefillCode;
-                setTimeout(() => document.querySelector('input[name="name"]').focus(), 100);
-            }
+    function openAddModal(prefillCode = '') {
+        document.getElementById('addModal').classList.add('modal-active');
+        if (prefillCode) {
+            document.querySelector('#addModal input[name="code"]').value = prefillCode;
+            setTimeout(() => document.querySelector('#addModal input[name="name"]').focus(), 100);
         }
+    }
 
-        function openEditModal(id, code, name, category, price, stock, weight, unit) {
-            document.getElementById('editForm').action = '/products/update/' + id;
-            document.getElementById('editCode').value = code;
-            document.getElementById('editName').value = name;
-            document.getElementById('editCategory').value = category;
-            document.getElementById('editPrice').value = price;
-            document.getElementById('editStock').value = stock;
-            document.getElementById('editWeight').value = weight && weight !== 'undefined' ? weight : 0;
-            document.getElementById('editUnit').value = unit || 'ชิ้น';
-            document.getElementById('editModal').classList.add('modal-active');
+    function openEditModal(productId) {
+        const product = productsData.find(p => p._id === productId);
+        if (!product) return;
+
+        document.getElementById('editForm').action = '/products/update/' + productId;
+        document.getElementById('editCode').value = product.code;
+        document.getElementById('editName').value = product.name;
+        document.getElementById('editCategory').value = product.category;
+        document.getElementById('editPrice').value = product.price;
+        document.getElementById('editStock').value = product.stock;
+        document.getElementById('editWeight').value = product.weight || 0;
+        document.getElementById('editUnit').value = product.unit || 'ชิ้น';
+        document.getElementById('editModal').classList.add('modal-active');
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('modal-active');
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const params = new URLSearchParams(window.location.search);
+        const addBarcode = params.get('addBarcode');
+        if (addBarcode) openAddModal(addBarcode);
+    });
+
+    let html5QrcodeScanner = null;
+    function openScanner() {
+        document.getElementById('scannerModal').classList.add('modal-active');
+        if (!html5QrcodeScanner) {
+            html5QrcodeScanner = new Html5QrcodeScanner(
+                "reader",
+                { fps: 10, qrbox: {width: 250, height: 150} },
+                false
+            );
+            html5QrcodeScanner.render(onScanSuccess, onScanFailure);
         }
+    }
 
-        function closeModal(id) {
-            document.getElementById(id).classList.remove('modal-active');
+    function closeScanner() {
+        document.getElementById('scannerModal').classList.remove('modal-active');
+        if (html5QrcodeScanner) {
+            html5QrcodeScanner.clear().then(() => { html5QrcodeScanner = null; });
         }
+    }
 
-        // Handle URL parameter for pre-filling barcode from LINE
-        window.addEventListener('DOMContentLoaded', () => {
-            const params = new URLSearchParams(window.location.search);
-            const addBarcode = params.get('addBarcode');
-            if (addBarcode) {
-                openAddModal(addBarcode);
-            }
-        });
+    async function onScanSuccess(decodedText) {
+        closeScanner();
+        Swal.fire({ title: 'กำลังค้นหา...', text: 'รหัส: ' + decodedText, allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
 
-        // Scanner Logic
-        let html5QrcodeScanner = null;
-
-        function openScanner() {
-            document.getElementById('scannerModal').classList.add('modal-active');
+        try {
+            const response = await fetch('/api/products/' + decodedText);
+            const data = await response.json();
+            Swal.close();
             
-            if (!html5QrcodeScanner) {
-                html5QrcodeScanner = new Html5QrcodeScanner(
-                    "reader",
-                    { 
-                        fps: 10, 
-                        qrbox: {width: 250, height: 150}, 
-                        aspectRatio: 1.0,
-                        formatsToSupport: [
-                            Html5QrcodeSupportedFormats.EAN_13,
-                            Html5QrcodeSupportedFormats.EAN_8,
-                            Html5QrcodeSupportedFormats.UPC_A,
-                            Html5QrcodeSupportedFormats.UPC_E,
-                            Html5QrcodeSupportedFormats.CODE_128,
-                            Html5QrcodeSupportedFormats.CODE_39
-                        ]
-                    },
-                    /* verbose= */ false
-                );
-                html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+            if (data.success && data.product) {
+                openEditModal(data.product._id);
+            } else {
+                openAddModal(decodedText);
+                Swal.fire({ title: 'ไม่พบสินค้า', text: 'กรุณาเพิ่มสินค้าใหม่เข้าระบบ', icon: 'info', timer: 2000, showConfirmButton: false });
             }
+        } catch (err) {
+            Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
         }
+    }
 
-        function closeScanner() {
-            document.getElementById('scannerModal').classList.remove('modal-active');
-            if (html5QrcodeScanner) {
-                html5QrcodeScanner.clear().then(() => {
-                    html5QrcodeScanner = null;
-                }).catch(error => {
-                    console.error("Failed to clear html5QrcodeScanner. ", error);
-                });
-            }
-        }
+    function onScanFailure(error) {}
 
-        async function onScanSuccess(decodedText, decodedResult) {
-            // Stop scanning and close modal
-            closeScanner();
-            
-            // Show loading
-            Swal.fire({
-                title: 'กำลังค้นหา...',
-                text: 'รหัส: ' + decodedText,
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-
-            // Call API
-            try {
-                const response = await fetch('/api/products/' + decodedText);
-                const data = await response.json();
-                
-                Swal.close();
-                
-                if (data.success && data.product) {
-                    // Open edit modal
-                    const p = data.product;
-                    openEditModal(p._id, p.code, p.name, p.category, p.price, p.stock, p.weight, p.unit);
-                } else {
-                    // Not found, open add modal
-                    openAddModal(decodedText);
-                    Swal.fire({
-                        title: 'ไม่พบสินค้า',
-                        text: 'ไม่พบสินค้ารหัสนี้ในระบบ กรุณาเพิ่มสินค้าใหม่',
-                        icon: 'info',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                }
-            } catch (err) {
-                console.error(err);
-                Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
-            }
-        }
-
-        function onScanFailure(error) {
-            // handle scan failure, usually better to ignore and keep scanning
-        }
-
-        // Handle URL errors/success parameter alerts fading after 4s
-        setTimeout(() => {
-            document.querySelectorAll('.alert').forEach(el => el.style.display = 'none');
-        }, 4000);
-    </script>
-    `
-    }) %>
+    setTimeout(() => {
+        document.querySelectorAll('.alert').forEach(el => el.style.display = 'none');
+    }, 4000);
+`
+}) %>
