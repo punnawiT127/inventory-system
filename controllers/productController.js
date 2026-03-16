@@ -107,3 +107,10 @@ exports.getProductByCode = async (req, res) => {
         res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดบนเซิร์ฟเวอร์' });
     }
 };
+// Render dedicated scanner page
+exports.renderScanner = async (req, res) => {
+    res.render('scanner', {
+        title: 'สแกนด่วน (Quick Scan)',
+        user: req.session
+    });
+};

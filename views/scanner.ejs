@@ -1,0 +1,81 @@
+<%- include('layout', { title: title, user: user, extraCss: `
+    .scanner-landing {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 80vh;
+        text-align: center;
+    }
+    .scanner-box {
+        width: 100%;
+        max-width: 600px;
+        background: var(--bg-card);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        box-shadow: var(--shadow-lg);
+    }
+    #reader {
+        width: 100%;
+        min-height: 300px;
+        border-radius: var(--radius-md);
+        overflow: hidden;
+    }
+`, body: `
+<div class="scanner-landing">
+    <div class="scanner-box">
+        <h2 style="margin-bottom: 0.5rem; color: var(--primary);">เครื่องมือสแกนด่วน 📸</h2>
+        <p class="text-muted" style="margin-bottom: 2rem;">วางบาร์โค้ดหน้ากล้องเพื่อจัดการสต็อกทันที</p>
+        
+        <div id="reader"></div>
+        
+        <div style="margin-top: 2rem;">
+            <a href="/products" class="btn" style="background: var(--bg-input); color: var(--text-main);">ยกเลิกและกลับหน้าคลังสินค้า</a>
+        </div>
+    </div>
+</div>
+`, extraJs: `
+    let html5QrcodeScanner = null;
+    let isScanning = false;
+
+    function startScanner() {
+        html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader",
+            { fps: 15, qrbox: {width: 250, height: 150} },
+            false
+        );
+        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+    }
+
+    async function onScanSuccess(decodedText) {
+        if (isScanning) return;
+        isScanning = true;
+
+        // Visual feedback
+        const reader = document.getElementById('reader');
+        reader.style.opacity = '0.5';
+        
+        Swal.fire({
+            title: 'สแกนสำเร็จ!',
+            text: 'กำลังพาไปที่หน้าสินค้า: ' + decodedText,
+            icon: 'success',
+            timer: 1500,
+            showConfirmButton: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        // Small delay for visual feedback then redirect
+        setTimeout(() => {
+            window.location.href = '/products?addBarcode=' + encodeURIComponent(decodedText);
+        }, 1000);
+    }
+
+    function onScanFailure(error) {
+        // Quietly fail as per library standard
+    }
+
+    // Auto-start on load
+    window.addEventListener('DOMContentLoaded', () => {
+        startScanner();
+    });
+` }) %>

@@ -7,6 +7,7 @@ const { requireAuth, requireOwner } = require('../controllers/authController');
 router.use(requireAuth);
 
 router.get('/products', productController.getProducts);
+router.get('/scanner', productController.renderScanner);
 router.post('/products/add', productController.addProduct);
 router.post('/products/update/:id', productController.updateProduct);
 // API Routes (Frontend JS requests)
