@@ -1,4 +1,7 @@
-<%- include('layout', { title: 'จัดการคลังสินค้า' , user: user, body: ` <div class="card" style="margin-bottom: 2rem;">
+<%- include('layout', { title: 'จัดการคลังสินค้า' , user: user, body: ` 
+<div id="products-internal-store" style="display: none;" data-products='${JSON.stringify(products).replace(/'/g, "&#39;")}'></div>
+
+<div class="card" style="margin-bottom: 2rem;">
     <div class="flex items-center" style="justify-content: space-between; margin-bottom: 1.5rem;">
         <h2>รายการสินค้าคงคลัง (Inventory)</h2>
         <div style="display: flex; gap: 0.5rem;">
@@ -32,7 +35,7 @@
     ` : ''}
 
     <div class="table-responsive">
-        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left;" id="products-table">
             <thead>
                 <tr style="border-bottom: 2px solid var(--border); color: var(--text-muted);">
                     <th style="padding: 1rem;">รหัส (Code)</th>
@@ -77,15 +80,15 @@
                         ${(product.weight > 0) ? `${product.weight} กก.` : (['กิโลกรัม', 'กรัม', 'ขีด'].includes(product.unit) ? `${product.stock} ${product.unit}` : '-')}
                     </td>
                     <td style="padding: 1rem; text-align: center;">
-                        <button class="btn"
+                        <button class="btn js-edit-product"
                             style="background-color: var(--bg-input); color: var(--text-main); padding: 0.5rem; font-size: 0.875rem;"
-                            onclick="openEditModal('${product._id}')">
+                            data-id="${product._id}">
                             แก้ไข
                         </button>
 
                         ${(user.role === 'Owner' || user.userRole === 'Owner') ? `
                         <form action="/products/delete/${product._id}" method="POST" style="display:inline;"
-                            onsubmit="return confirm('ยืนยันการลบสินค้า \`${product.name}\` ?');">
+                            onsubmit="return confirm('ยืนยันการลบสินค้า \`${product.name.replace(/'/g, "\\\\'")}\` ?');">
                             <button type="submit" class="btn"
                                 style="background-color: #FEF2F2; color: var(--danger); padding: 0.5rem; font-size: 0.875rem; margin-left: 0.5rem;">
                                 ลบ
@@ -135,7 +138,7 @@
                         <option value="ของใช้ส่วนตัว 🧴">ของใช้ส่วนตัว 🧴</option>
                         <option value="เครื่องปรุงอาหาร 🍳">เครื่องปรุงอาหาร 🍳</option>
                         <option value="ของสด 🥬">ของสด 🥬</option>
-                        <option value="ของแช่แข็ง / แช่เย็น ❄️">ของแช่แข็ง / แช่เย็น ❄️</option>
+                        <option value="ของแ่ข็ง / แช่เย็น ❄️">ของแช่แข็ง / แช่เย็น ❄️</option>
                         <option value="ของใช้เบ็ดเตล็ด 🔧">ของใช้เบ็ดเตล็ด 🔧</option>
                     </select>
                 </div>
@@ -257,7 +260,15 @@
     </div>
 `,
 extraJs: `
-    const productsData = ` + JSON.stringify(products) + `;
+    let productsData = [];
+    try {
+        const store = document.getElementById('products-internal-store');
+        if (store) {
+            productsData = JSON.parse(store.getAttribute('data-products'));
+        }
+    } catch (e) {
+        console.error('Error parsing products data:', e);
+    }
 
     function openAddModal(prefillCode = '') {
         document.getElementById('addModal').classList.add('modal-active');
@@ -269,7 +280,10 @@ extraJs: `
 
     function openEditModal(productId) {
         const product = productsData.find(p => p._id === productId);
-        if (!product) return;
+        if (!product) {
+            console.error('Product not found:', productId);
+            return;
+        }
 
         document.getElementById('editForm').action = '/products/update/' + productId;
         document.getElementById('editCode').value = product.code;
@@ -281,6 +295,15 @@ extraJs: `
         document.getElementById('editUnit').value = product.unit || 'ชิ้น';
         document.getElementById('editModal').classList.add('modal-active');
     }
+
+    // Event delegation for edit buttons
+    document.addEventListener('click', (e) => {
+        const editBtn = e.target.closest('.js-edit-product');
+        if (editBtn) {
+            const productId = editBtn.getAttribute('data-id');
+            openEditModal(productId);
+        }
+    });
 
     function closeModal(id) {
         document.getElementById(id).classList.remove('modal-active');

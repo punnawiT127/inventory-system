@@ -69,8 +69,10 @@
     } 
 `, 
 body: ` 
+<div id="products-data-store" style="display: none;" data-products='${JSON.stringify(products).replace(/'/g, "&#39;")}'></div>
+
 <div class="pos-container">
-    <div class="pos-products" style="display: block;">
+    <div class="pos-products" id="pos-products-container" style="display: block;">
         <div style="margin-bottom: 2rem;">
             <button class="btn btn-primary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 1rem; font-size: 1.1rem; border-radius: var(--radius-lg); background-color: var(--secondary);" onclick="openScanner()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -92,7 +94,7 @@ body: `
             </h3>
             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
                 ${groupedProducts[category].map(product => `
-                <div class="product-card" onclick="addToCart('${product._id}')">
+                <div class="product-card js-product-item" data-id="${product._id}">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
                         <span style="font-size: 0.75rem; color: var(--text-muted);">${product.code}</span>
                         <span style="font-size: 0.75rem; background: var(--bg-app); padding: 0.1rem 0.5rem; border-radius: 99px;">
@@ -139,12 +141,24 @@ body: `
 </div>
 `,
 extraJs: `
-    const productsData = ` + JSON.stringify(products) + `;
+    let productsData = [];
+    try {
+        const dataElement = document.getElementById('products-data-store');
+        if (dataElement) {
+            productsData = JSON.parse(dataElement.getAttribute('data-products'));
+        }
+    } catch (e) {
+        console.error('Error parsing products data:', e);
+    }
+
     let cart = {};
 
     function addToCart(productId) {
         const product = productsData.find(p => p._id === productId);
-        if (!product) return;
+        if (!product) {
+            console.error('Product not found in local data:', productId);
+            return;
+        }
 
         if (!cart[productId]) {
             cart[productId] = { 
@@ -169,6 +183,15 @@ extraJs: `
         }
         renderCart();
     }
+
+    // Set up event delegation for product cards
+    document.addEventListener('click', (e) => {
+        const productCard = e.target.closest('.js-product-item');
+        if (productCard) {
+            const productId = productCard.getAttribute('data-id');
+            addToCart(productId);
+        }
+    });
 
     function updateQty(id, delta) {
         if (cart[id]) {
@@ -196,8 +219,6 @@ extraJs: `
 
         cartEl.innerHTML = '';
         let total = 0;
-        let itemCount = 0;
-
         const cartItems = Object.values(cart);
         
         if (cartItems.length === 0) {
@@ -208,22 +229,41 @@ extraJs: `
         }
 
         cartItems.forEach(item => {
-            itemCount++;
             const subTotal = item.price * item.quantity;
             total += subTotal;
 
             const itemEl = document.createElement('div');
             itemEl.className = 'cart-item';
-            itemEl.innerHTML = 
-                '<div class="cart-item-info">' +
-                    '<div style="font-weight: 500; font-size: 0.875rem;">' + item.name + '</div>' +
-                    '<div style="font-size: 0.75rem; color: var(--text-muted);">฿' + item.price.toLocaleString('th-TH') + '</div>' +
-                '</div>' +
-                '<div class="cart-item-qty">' +
-                    '<button class="qty-btn" onclick="updateQty(\'' + item.id + '\', -1)">-</button>' +
-                    '<span style="font-weight: 600; width: 25px; text-align: center;">' + item.quantity + '</span>' +
-                    '<button class="qty-btn" onclick="updateQty(\'' + item.id + '\', 1)">+</button>' +
-                '</div>';
+            
+            // Using standard DOM elements to avoid innerHTML quoting issues
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'cart-item-info';
+            infoDiv.innerHTML = '<div style="font-weight: 500; font-size: 0.875rem;">' + item.name + '</div>' +
+                                '<div style="font-size: 0.75rem; color: var(--text-muted);">฿' + item.price.toLocaleString('th-TH') + '</div>';
+            
+            const qtyDiv = document.createElement('div');
+            qtyDiv.className = 'cart-item-qty';
+            
+            const minusBtn = document.createElement('button');
+            minusBtn.className = 'qty-btn';
+            minusBtn.textContent = '-';
+            minusBtn.onclick = () => updateQty(item.id, -1);
+            
+            const qtySpan = document.createElement('span');
+            qtySpan.style.cssText = 'font-weight: 600; width: 25px; text-align: center;';
+            qtySpan.textContent = item.quantity;
+            
+            const plusBtn = document.createElement('button');
+            plusBtn.className = 'qty-btn';
+            plusBtn.textContent = '+';
+            plusBtn.onclick = () => updateQty(item.id, 1);
+            
+            qtyDiv.appendChild(minusBtn);
+            qtyDiv.appendChild(qtySpan);
+            qtyDiv.appendChild(plusBtn);
+            
+            itemEl.appendChild(infoDiv);
+            itemEl.appendChild(qtyDiv);
             cartEl.appendChild(itemEl);
         });
 
