@@ -36,7 +36,7 @@
             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
                 ${groupedProducts[category].map(product => `
                 <div class="product-card"
-                    onclick="addToCart('${product._id}', '${product.name}', ${product.price}, ${product.stock}, '${product.unit || 'ชิ้น'}')">
+                    onclick="addToCart('${product._id}', '${product.name.replace(/'/g, "\\\\'")}', ${product.price}, ${product.stock}, '${product.unit || 'ชิ้น'}')">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
                         <span style="font-size: 0.75rem; color: var(--text-muted);">${product.code}</span>
                         <span style="font-size: 0.75rem; background: var(--bg-app); padding: 0.1rem 0.5rem; border-radius: 99px;">

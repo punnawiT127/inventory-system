@@ -79,7 +79,7 @@
                     <td style="padding: 1rem; text-align: center;">
                         <button class="btn"
                             style="background-color: var(--bg-input); color: var(--text-main); padding: 0.5rem; font-size: 0.875rem;"
-                            onclick="openEditModal('${product._id}', '${product.code}', '${product.name}', '${product.category}', '${product.price}', '${product.stock}', '${product.weight}', '${product.unit || 'ชิ้น'}')">
+                            onclick="openEditModal('${product._id}', '${product.code}', '${product.name.replace(/'/g, "\\\\'")}', '${product.category}', '${product.price}', '${product.stock}', '${product.weight}', '${product.unit || 'ชิ้น'}')">
                             แก้ไข
                         </button>
 

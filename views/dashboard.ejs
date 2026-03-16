@@ -1,19 +1,74 @@
-<%- include('layout', { title: 'หน้าหลัก (Dashboard)' , user: user, extraCss: ` .dashboard-stats { display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; } .stat-card {
-    background: var(--bg-card); border-radius: var(--radius-lg); padding: 1.5rem; display: flex; align-items: center;
-    box-shadow: var(--shadow-sm); border: 1px solid var(--border); } .stat-icon { width: 48px; height: 48px;
-    border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: 1.5rem; }
-    .stat-primary { background: rgba(79, 70, 229, 0.1); color: var(--primary); } .stat-secondary { background: rgba(16,
-    185, 129, 0.1); color: var(--secondary); } .stat-warning { background: rgba(245, 158, 11, 0.1); color:
-    var(--warning); } .stat-value { font-size: 1.75rem; font-weight: 700; color: var(--text-main); line-height: 1;
-    margin-bottom: 0.25rem; } .stat-label { color: var(--text-muted); font-size: 0.875rem; font-weight: 500; }
-    .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; } @media (max-width: 900px) {
-    .dashboard-grid { grid-template-columns: 1fr; } } .panel { background: var(--bg-card); border-radius:
-    var(--radius-lg); padding: 1.5rem; box-shadow: var(--shadow-sm); border: 1px solid var(--border); } .panel-title {
-    font-size: 1.125rem; font-weight: 600; margin-bottom: 1.5rem; color: var(--text-main); display: flex; align-items:
-    center; justify-content: space-between; } .list-item { display: flex; justify-content: space-between; align-items:
-    center; padding: 1rem 0; border-bottom: 1px solid var(--border); } .list-item:last-child { border-bottom: none; } `,
-    body: ` <div style="background: var(--bg-card); border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: var(--shadow-sm); border: 1px solid var(--border); margin-bottom: 2rem;">
+<%- include('layout', { title: 'หน้าหลัก (Dashboard)' , user: user, extraCss: ` 
+    .dashboard-stats { 
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+        gap: 1.5rem; 
+        margin-bottom: 2rem; 
+    } 
+    .stat-card {
+        background: var(--bg-card); 
+        border-radius: var(--radius-lg); 
+        padding: 1.5rem; 
+        display: flex; 
+        align-items: center;
+        box-shadow: var(--shadow-sm); 
+        border: 1px solid var(--border); 
+    } 
+    .stat-icon { 
+        width: 48px; 
+        height: 48px;
+        border-radius: 12px; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        margin-right: 1.5rem; 
+    }
+    .stat-primary { background: rgba(79, 70, 229, 0.1); color: var(--primary); } 
+    .stat-secondary { background: rgba(16, 185, 129, 0.1); color: var(--secondary); } 
+    .stat-warning { background: rgba(245, 158, 11, 0.1); color: var(--warning); } 
+    .stat-value { 
+        font-size: 1.75rem; 
+        font-weight: 700; 
+        color: var(--text-main); 
+        line-height: 1;
+        margin-bottom: 0.25rem; 
+    } 
+    .stat-label { color: var(--text-muted); font-size: 0.875rem; font-weight: 500; }
+    .dashboard-grid { 
+        display: grid; 
+        grid-template-columns: 2fr 1fr; 
+        gap: 1.5rem; 
+    } 
+    @media (max-width: 900px) {
+        .dashboard-grid { grid-template-columns: 1fr; } 
+    } 
+    .panel { 
+        background: var(--bg-card); 
+        border-radius: var(--radius-lg); 
+        padding: 1.5rem; 
+        box-shadow: var(--shadow-sm); 
+        border: 1px solid var(--border); 
+    } 
+    .panel-title {
+        font-size: 1.125rem; 
+        font-weight: 600; 
+        margin-bottom: 1.5rem; 
+        color: var(--text-main); 
+        display: flex; 
+        align-items: center; 
+        justify-content: space-between; 
+    } 
+    .list-item { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        padding: 1rem 0; 
+        border-bottom: 1px solid var(--border); 
+    } 
+    .list-item:last-child { border-bottom: none; } 
+`,
+body: ` 
+<div style="background: var(--bg-card); border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: var(--shadow-sm); border: 1px solid var(--border); margin-bottom: 2rem;">
     <h3 style="margin-top: 0; margin-bottom: 1rem; font-size: 1.125rem; color: var(--text-main);">คัดกรองยอดขาย</h3>
     <form method="GET" action="/dashboard" style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end;">
         <div style="flex: 1; min-width: 150px;">
@@ -75,141 +130,145 @@
             <div class="stat-label">สินค้าใกล้หมด (แจ้งเตือน)</div>
         </div>
     </div>
+</div>
+
+<div class="dashboard-grid">
+    <div class="panel">
+        <div class="panel-title">ยอดขายล่าสุด (Recent Sales)</div>
+        ${recentSales.length === 0 ? `
+        <div class="text-center text-muted" style="padding: 2rem;">ยังไม่มียอดขาย</div>
+        ` : `
+        <div class="table-responsive">
+            <table class="table table-hover" style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr style="border-bottom: 2px solid var(--border); color: var(--text-muted); font-size: 0.875rem;">
+                        <th style="padding: 0.75rem 0;">วันที่/เวลา</th>
+                        <th style="padding: 0.75rem 0;">พนักงาน</th>
+                        <th style="padding: 0.75rem 0;">จำนวนรายการ</th>
+                        <th style="padding: 0.75rem 0; text-align: right;">ยอดรวม</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${recentSales.map(sale => `
+                    <tr style="border-bottom: 1px solid var(--border); cursor: pointer;" onclick="openSaleModal('${sale._id}')">
+                        <td style="padding: 1rem 0;">
+                            ${new Date(sale.date).toLocaleString('th-TH', { timeZone: 'Asia/Bangkok', dateStyle: 'short', timeStyle: 'short' })}
+                        </td>
+                        <td style="padding: 1rem 0;">
+                            ${sale.soldBy ? sale.soldBy.username : 'Unknown'}
+                        </td>
+                        <td style="padding: 1rem 0;">
+                            ${sale.items.length} รายการ
+                        </td>
+                        <td style="padding: 1rem 0; text-align: right; font-weight: 500; color: var(--text-main);">
+                            ฿${sale.totalAmount.toLocaleString('th-TH')}
+                        </td>
+                    </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+        `}
     </div>
 
-    <div class="dashboard-grid">
-        <div class="panel">
-            <div class="panel-title">ยอดขายล่าสุด (Recent Sales)</div>
-            ${recentSales.length === 0 ? `
-            <div class="text-center text-muted" style="padding: 2rem;">ยังไม่มียอดขาย</div>
+    <div>
+        <div class="panel" style="margin-bottom: 1.5rem;">
+            <div class="panel-title">สินค้าขายดี (Top Sellers)</div>
+            ${topProducts.length === 0 ? `
+            <div class="text-center text-muted" style="padding: 2rem;">ไม่มีข้อมูล</div>
             ` : `
-            <div class="table-responsive">
-                <table class="table table-hover" style="width: 100%; border-collapse: collapse; text-align: left;">
-                    <thead>
-                        <tr style="border-bottom: 2px solid var(--border); color: var(--text-muted); font-size: 0.875rem;">
-                            <th style="padding: 0.75rem 0;">วันที่/เวลา</th>
-                            <th style="padding: 0.75rem 0;">พนักงาน</th>
-                            <th style="padding: 0.75rem 0;">จำนวนรายการ</th>
-                            <th style="padding: 0.75rem 0; text-align: right;">ยอดรวม</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${recentSales.map(sale => `
-                        <tr style="border-bottom: 1px solid var(--border); cursor: pointer;" onclick="openSaleModal('${sale._id}')">
-                            <td style="padding: 1rem 0;">
-                                ${new Date(sale.date).toLocaleString('th-TH', { timeZone: 'Asia/Bangkok', dateStyle: 'short', timeStyle: 'short' })}
-                            </td>
-                            <td style="padding: 1rem 0;">
-                                ${sale.soldBy ? sale.soldBy.username : 'Unknown'}
-                            </td>
-                            <td style="padding: 1rem 0;">
-                                ${sale.items.length} รายการ
-                            </td>
-                            <td style="padding: 1rem 0; text-align: right; font-weight: 500; color: var(--text-main);">
-                                ฿${sale.totalAmount.toLocaleString('th-TH')}
-                            </td>
-                        </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
+            ${topProducts.map(tp => `
+            <div class="list-item">
+                <div>
+                    <div style="font-weight: 500;">${tp.productDetails.name}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">${tp.productDetails.code}</div>
+                </div>
+                <div style="font-weight: 600; color: var(--primary);">${tp.totalSold} ชิ้น</div>
             </div>
+            `).join('')}
             `}
         </div>
 
-        <div>
-            <div class="panel" style="margin-bottom: 1.5rem;">
-                <div class="panel-title">สินค้าขายดี (Top Sellers)</div>
-                ${topProducts.length === 0 ? `
-                <div class="text-center text-muted" style="padding: 2rem;">ไม่มีข้อมูล</div>
-                ` : `
-                ${topProducts.map(tp => `
-                <div class="list-item">
-                    <div>
-                        <div style="font-weight: 500;">${tp.productDetails.name}</div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted);">${tp.productDetails.code}</div>
-                    </div>
-                    <div style="font-weight: 600; color: var(--primary);">${tp.totalSold} ชิ้น</div>
+        <div class="panel">
+            <div class="panel-title" style="color: var(--danger);">ต้องเติมสต็อกด่วน</div>
+            ${lowStockProducts.length === 0 ? `
+            <div class="text-center text-muted" style="padding: 2rem;">สต็อกพร้อมขาย</div>
+            ` : `
+            ${lowStockProducts.map(lp => `
+            <div class="list-item">
+                <div>
+                    <div style="font-weight: 500;">${lp.name}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">${lp.code}</div>
                 </div>
-                `).join('')}
-                `}
+                <div style="font-weight: 700; color: var(--danger);">${lp.stock} ชิ้น</div>
             </div>
-
-            <div class="panel">
-                <div class="panel-title" style="color: var(--danger);">ต้องเติมสต็อกด่วน</div>
-                ${lowStockProducts.length === 0 ? `
-                <div class="text-center text-muted" style="padding: 2rem;">สต็อกพร้อมขาย</div>
-                ` : `
-                ${lowStockProducts.map(lp => `
-                <div class="list-item">
-                    <div>
-                        <div style="font-weight: 500;">${lp.name}</div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted);">${lp.code}</div>
-                    </div>
-                    <div style="font-weight: 700; color: var(--danger);">${lp.stock} ชิ้น</div>
-                </div>
-                `).join('')}
-                `}
-            </div>
-        </div>
+            `).join('')}
+            `}
         </div>
     </div>
+</div>
 
-    <!-- Sale Details Modal -->
-    <div id="saleModal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center;">
-        <div class="modal-content" style="background: var(--bg-card); padding: 2rem; border-radius: var(--radius-lg); width: 100%; max-width: 600px; max-height: 80vh; overflow-y: auto; box-shadow: var(--shadow-lg);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                <h3 style="margin: 0;">รายละเอียดการขาย</h3>
-                <button onclick="closeSaleModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</button>
-            </div>
-            
-            <div id="saleModalContent">
-                <!-- Data injected by JS -->
-            </div>
-            
-            <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border); text-align: right;">
-                <h3 style="margin: 0;">ยอดรวม: <span id="saleModalTotal" style="color: var(--primary);">฿0</span></h3>
-            </div>
+<!-- Sale Details Modal -->
+<div id="saleModal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center;">
+    <div class="modal-content" style="background: var(--bg-card); padding: 2rem; border-radius: var(--radius-lg); width: 100%; max-width: 600px; max-height: 80vh; overflow-y: auto; box-shadow: var(--shadow-lg);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h3 style="margin: 0;">รายละเอียดการขาย</h3>
+            <button onclick="closeSaleModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); font-weight: bold;">&times;</button>
+        </div>
+        
+        <div id="saleModalContent">
+            <!-- Data injected by JS -->
+        </div>
+        
+        <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border); text-align: right;">
+            <h4 style="margin: 0;">ยอดรวม: <span id="saleModalTotal" style="color: var(--primary);">฿0</span></h4>
         </div>
     </div>
+</div>
+`,
+extraJs: "const recentSalesData = " + JSON.stringify(recentSales) + ";" + `
+    // Pass recent sales data safely
+    function openSaleModal(saleId) {
+        const sale = recentSalesData.find(s => s._id === saleId);
+        if (!sale) return;
 
-    <script>
-        // Inject recentSales data safely using URI encoding to prevent syntax errors with quotes/slashes
-        const recentSalesData = JSON.parse(decodeURIComponent('${encodeURIComponent(JSON.stringify(recentSales))}'));
+        const contentDiv = document.getElementById('saleModalContent');
+        const totalSpan = document.getElementById('saleModalTotal');
+        
+        let html = '<div class="table-responsive"><table class="table" style="width: 100%; text-align: left;">';
+        html += '<thead><tr><th>สินค้า</th><th style="text-align: right;">ราคา</th><th style="text-align: center;">จำนวน</th><th style="text-align: right;">รวม</th></tr></thead><tbody>';
+        
+        sale.items.forEach(item => {
+            const itemTotal = item.priceAtSale * item.quantity;
+            html += '<tr style="border-bottom: 1px solid var(--border);">' +
+                        '<td style="padding: 0.75rem 0;">' +
+                            '<div style="font-weight: 500;">' + (item.product ? item.product.name : 'สินค้ายกเลิก/ลบแล้ว') + '</div>' +
+                            '<div style="font-size: 0.75rem; color: var(--text-muted);">' + (item.product ? item.product.code : '-') + '</div>' +
+                        '</td>' +
+                        '<td style="text-align: right;">฿' + item.priceAtSale.toLocaleString('th-TH') + '</td>' +
+                        '<td style="text-align: center;">' + item.quantity + '</td>' +
+                        '<td style="text-align: right; font-weight: 500;">฿' + itemTotal.toLocaleString('th-TH') + '</td>' +
+                    '</tr>';
+        });
+        
+        html += '</tbody></table></div>';
+        
+        contentDiv.innerHTML = html;
+        totalSpan.textContent = '฿' + sale.totalAmount.toLocaleString('th-TH');
+        
+        document.getElementById('saleModal').style.display = 'flex';
+    }
 
-        function openSaleModal(saleId) {
-            const sale = recentSalesData.find(s => s._id === saleId);
-            if (!sale) return;
+    function closeSaleModal() {
+        document.getElementById('saleModal').style.display = 'none';
+    }
 
-            const contentDiv = document.getElementById('saleModalContent');
-            const totalSpan = document.getElementById('saleModalTotal');
-            
-            let html = '<div class="table-responsive"><table class="table" style="width: 100%; text-align: left;">';
-            html += '<thead><tr><th>สินค้า</th><th style="text-align: right;">ราคา</th><th style="text-align: center;">จำนวน</th><th style="text-align: right;">รวม</th></tr></thead><tbody>';
-            
-            sale.items.forEach(item => {
-                const itemTotal = item.price * item.quantity;
-                html += '<tr>' +
-                            '<td>' +
-                                '<div style="font-weight: 500;">' + (item.product ? item.product.name : 'Unknown Product') + '</div>' +
-                                '<div style="font-size: 0.75rem; color: var(--text-muted);">' + (item.product ? item.product.code : '-') + '</div>' +
-                            '</td>' +
-                            '<td style="text-align: right;">฿' + item.price.toLocaleString('th-TH') + '</td>' +
-                            '<td style="text-align: center;">' + item.quantity + '</td>' +
-                            '<td style="text-align: right; font-weight: 500;">฿' + itemTotal.toLocaleString('th-TH') + '</td>' +
-                        '</tr>';
-            });
-            
-            html += '</tbody></table></div>';
-            
-            contentDiv.innerHTML = html;
-            totalSpan.textContent = '฿' + sale.totalAmount.toLocaleString('th-TH');
-            
-            document.getElementById('saleModal').style.display = 'flex';
+    // Close on click outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('saleModal');
+        if (event.target == modal) {
+            closeSaleModal();
         }
-
-        function closeSaleModal() {
-            document.getElementById('saleModal').style.display = 'none';
-        }
-    </script>
-    `
-    }) %>
+    }
+`
+}) %>
