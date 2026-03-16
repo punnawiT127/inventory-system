@@ -214,16 +214,16 @@ extraJs: `
 
             const itemEl = document.createElement('div');
             itemEl.className = 'cart-item';
-            itemEl.innerHTML = 
-                '<div class="cart-item-info">' +
-                    '<div style="font-weight: 500; font-size: 0.875rem;">' + item.name + '</div>' +
-                    '<div style="font-size: 0.75rem; color: var(--text-muted);">฿' + item.price.toLocaleString('th-TH') + '</div>' +
-                '</div>' +
-                '<div class="cart-item-qty">' +
-                    '<button class="qty-btn" onclick="updateQty(\\'' + item.id + '\\', -1)">-</button>' +
-                    '<span style="font-weight: 600; width: 25px; text-align: center;">' + item.quantity + '</span>' +
-                    '<button class="qty-btn" onclick="updateQty(\\'' + item.id + '\\', 1)">+</button>' +
-                '</div>';
+                itemEl.innerHTML = 
+                    `\x60<div class="cart-item-info">` +
+                        `\x60<div style="font-weight: 500; font-size: 0.875rem;">\x60 + item.name + `\x60</div>\x60` +
+                        `\x60<div style="font-size: 0.75rem; color: var(--text-muted);">฿\x60 + item.price.toLocaleString('th-TH') + `\x60</div>\x60` +
+                    `\x60</div>\x60` +
+                    `\x60<div class="cart-item-qty">\x60` +
+                        `\x60<button class="qty-btn" onclick="updateQty('\x60 + item.id + `\x60', -1)">-</button>\x60` +
+                        `\x60<span style="font-weight: 600; width: 25px; text-align: center;">\x60 + item.quantity + `\x60</span>\x60` +
+                        `\x60<button class="qty-btn" onclick="updateQty('\x60 + item.id + `\x60', 1)">+</button>\x60` +
+                    `\x60</div>\x60`;
             cartEl.appendChild(itemEl);
         });
 
