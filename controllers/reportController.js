@@ -75,3 +75,36 @@ exports.renderDashboard = async (req, res) => {
         res.status(500).send('Error loading dashboard');
     }
 };
+
+exports.renderDailySummary = async (req, res) => {
+    try {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        const summary = await Sale.aggregate([
+            { $match: { date: { $gte: today, $lt: tomorrow } } },
+            { $group: { _id: null, total: { $sum: '$totalAmount' }, count: { $sum: 1 } } }
+        ]);
+
+        const totalAmount = summary.length > 0 ? summary[0].total : 0;
+        const totalBills = summary.length > 0 ? summary[0].count : 0;
+
+        res.render('dailySummary', {
+            title: 'สรุปยอดขายวันนี้',
+            user: req.session,
+            totalAmount,
+            totalBills,
+            today: today.toLocaleDateString('th-TH', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                weekday: 'long'
+            })
+        });
+    } catch (err) {
+        console.error('Daily Summary Error:', err);
+        res.status(500).send('Error loading daily summary');
+    }
+};
