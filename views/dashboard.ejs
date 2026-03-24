@@ -99,6 +99,7 @@ body: `
         <div>
             <div class="stat-value">฿${filteredTotal.toLocaleString('th-TH')}</div>
             <div class="stat-label">${isFiltered ? 'ยอดขายตามช่วงเวลา' : 'ยอดขายวันนี้'} (${filteredCount} รายการ)</div>
+            <div class="stat-label" style="color: var(--secondary); margin-top: 0.25rem;">กำไรสุทธิ: ฿${(filteredProfit || 0).toLocaleString('th-TH')}</div>
         </div>
     </div>
 
@@ -112,6 +113,7 @@ body: `
         <div>
             <div class="stat-value">฿${monthlyTotal.toLocaleString('th-TH')}</div>
             <div class="stat-label">ยอดขายเดือนนี้</div>
+            <div class="stat-label" style="color: var(--secondary); margin-top: 0.25rem;">กำไรสุทธิ: ฿${(monthlyProfit || 0).toLocaleString('th-TH')}</div>
         </div>
     </div>
 

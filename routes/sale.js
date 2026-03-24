@@ -7,6 +7,7 @@ router.use(requireAuth);
 
 router.get('/pos', saleController.renderPOS);
 router.post('/api/sales', express.json(), saleController.processSale);
+router.get('/receipt/:id', saleController.renderReceipt);
 
 // Only Owners can view the full history
 const { requireOwner } = require('../controllers/authController');

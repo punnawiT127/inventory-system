@@ -47,11 +47,13 @@ const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/product');
 const saleRoutes = require('./routes/sale');
 const reportRoutes = require('./routes/report'); // Pre-wire report
+const staffRoutes = require('./routes/staff');
 
 app.use('/', authRoutes);
 app.use('/', productRoutes);
 app.use('/', saleRoutes);
 app.use('/', reportRoutes);
+app.use('/', staffRoutes);
 
 // Route Definitions (Will be added soon)
 app.get('/', (req, res) => {

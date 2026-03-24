@@ -16,6 +16,11 @@ const saleItemSchema = new mongoose.Schema({
         required: true,
         min: 0
     },
+    costPriceAtSale: {
+        type: Number,
+        default: 0,
+        min: 0
+    },
     subTotal: {
         type: Number,
         required: true,
@@ -33,6 +38,15 @@ const saleSchema = new mongoose.Schema({
         type: Number,
         required: true,
         min: 0
+    },
+    totalCost: {
+        type: Number,
+        default: 0,
+        min: 0
+    },
+    profit: {
+        type: Number,
+        default: 0
     },
     totalWeight: {
         type: Number,

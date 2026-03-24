@@ -42,7 +42,8 @@
                     <th style="padding: 1rem;">ชื่อสินค้า (Name)</th>
                     <th style="padding: 1rem;">ประเภท (Category)</th>
                     <th style="padding: 1rem; text-align: center;">หน่วย (Unit)</th>
-                    <th style="padding: 1rem; text-align: right;">ราคา (Price)</th>
+                    <th style="padding: 1rem; text-align: right;">ต้นทุน (Cost)</th>
+                    <th style="padding: 1rem; text-align: right;">ราคาขาย (Price)</th>
                     <th style="padding: 1rem; text-align: right;">คงเหลือ (Stock)</th>
                     <th style="padding: 1rem; text-align: right;">น้ำหนัก (Weight)</th>
                     <th style="padding: 1rem; text-align: center;">จัดการ (Actions)</th>
@@ -51,7 +52,7 @@
             <tbody>
                 ${products.length === 0 ? `
                 <tr>
-                    <td colspan="8" class="text-center text-muted" style="padding: 2rem;">
+                    <td colspan="9" class="text-center text-muted" style="padding: 2rem;">
                         ไม่มีข้อมูลสินค้า (No products available)
                     </td>
                 </tr>
@@ -66,7 +67,8 @@
                         </span>
                     </td>
                     <td style="padding: 1rem; text-align: center; color: var(--text-muted);">${product.unit || 'ชิ้น'}</td>
-                    <td style="padding: 1rem; text-align: right;">฿${product.price.toLocaleString('th-TH')}</td>
+                    <td style="padding: 1rem; text-align: right; color: var(--text-muted);">฿${(product.costPrice || 0).toLocaleString('th-TH')}</td>
+                    <td style="padding: 1rem; text-align: right; color: var(--secondary); font-weight: 600;">฿${product.price.toLocaleString('th-TH')}</td>
                     <td style="padding: 1rem; text-align: right;">
                         ${(product.stock <= 5 && product.stock> 0) ? `
                             <span style="color: var(--warning); font-weight: 600;">${product.stock} ${product.unit || 'ชิ้น'}</span>
@@ -88,7 +90,7 @@
 
                         ${(user.role === 'Owner' || user.userRole === 'Owner') ? `
                         <form action="/products/delete/${product._id}" method="POST" style="display:inline;"
-                            onsubmit="return confirm('ยืนยันการลบสินค้า \`${product.name.replace(/'/g, "\\\\'")}\` ?');">
+                            onsubmit="return confirm('ยืนยันการลบสินค้านี้ใช่หรือไม่?');">
                             <button type="submit" class="btn"
                                 style="background-color: #FEF2F2; color: var(--danger); padding: 0.5rem; font-size: 0.875rem; margin-left: 0.5rem;">
                                 ลบ
@@ -144,7 +146,11 @@
                 </div>
                 <div style="display: flex; gap: 1rem;">
                     <div class="form-group" style="flex: 1;">
-                        <label class="form-label">ราคา (Price)</label>
+                        <label class="form-label">ต้นทุน (Cost)</label>
+                        <input type="number" name="costPrice" class="form-control" min="0" step="0.01" value="0" required>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label">ราคาขาย (Price)</label>
                         <input type="number" name="price" class="form-control" min="0" step="0.01" required>
                     </div>
                     <div class="form-group" style="flex: 1;">
@@ -211,7 +217,11 @@
                 </div>
                 <div style="display: flex; gap: 1rem;">
                     <div class="form-group" style="flex: 1;">
-                        <label class="form-label">ราคา (Price)</label>
+                        <label class="form-label">ต้นทุน (Cost)</label>
+                        <input type="number" name="costPrice" id="editCostPrice" class="form-control" min="0" step="0.01" required>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label">ราคาขาย (Price)</label>
                         <input type="number" name="price" id="editPrice" class="form-control" min="0" step="0.01" required>
                     </div>
                     <div class="form-group" style="flex: 1;">
@@ -289,6 +299,7 @@ extraJs: `
         document.getElementById('editCode').value = product.code;
         document.getElementById('editName').value = product.name;
         document.getElementById('editCategory').value = product.category;
+        document.getElementById('editCostPrice').value = product.costPrice || 0;
         document.getElementById('editPrice').value = product.price;
         document.getElementById('editStock').value = product.stock;
         document.getElementById('editWeight').value = product.weight || 0;

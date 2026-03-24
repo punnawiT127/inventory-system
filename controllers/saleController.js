@@ -45,6 +45,7 @@ exports.processSale = async (req, res) => {
 
         let totalAmount = 0;
         let totalWeight = 0;
+        let totalCost = 0;
         const items = [];
         const lowStockAlerts = [];
 
@@ -76,11 +77,15 @@ exports.processSale = async (req, res) => {
             }
 
             totalWeight += saleWeight;
+            
+            const costAtSale = product.costPrice || 0;
+            totalCost += costAtSale * item.quantity;
 
             items.push({
                 product: product._id,
                 quantity: item.quantity,
                 priceAtSale: product.price,
+                costPriceAtSale: costAtSale,
                 subTotal: subTotal,
                 weightAtSale: saleWeight
             });
@@ -100,9 +105,13 @@ exports.processSale = async (req, res) => {
             }
         }
 
+        const profit = totalAmount - totalCost;
+
         const sale = new Sale({
             items,
             totalAmount,
+            totalCost,
+            profit,
             totalWeight,
             soldBy: req.session.userId
         });
@@ -157,5 +166,22 @@ exports.renderHistory = async (req, res) => {
     } catch (err) {
         console.error('History error:', err);
         res.status(500).send('Server Error: ไม่สามารถดึงข้อมูลประวัติการขายได้');
+    }
+};
+
+exports.renderReceipt = async (req, res) => {
+    try {
+        const sale = await Sale.findById(req.params.id)
+            .populate('soldBy', 'username')
+            .populate('items.product', 'name code');
+            
+        if (!sale) {
+            return res.status(404).send('ไม่พบใบเสร็จ (Receipt not found)');
+        }
+        
+        res.render('receipt', { sale });
+    } catch (err) {
+        console.error('Receipt Error:', err);
+        res.status(500).send('Error loading receipt');
     }
 };

@@ -28,19 +28,21 @@ exports.renderDashboard = async (req, res) => {
         // Aggregate today's or filtered sales
         const filteredSales = await Sale.aggregate([
             { $match: { date: dateQuery } },
-            { $group: { _id: null, total: { $sum: '$totalAmount' }, count: { $sum: 1 } } }
+            { $group: { _id: null, total: { $sum: '$totalAmount' }, count: { $sum: 1 }, profit: { $sum: '$profit' } } }
         ]);
 
         const filteredTotal = filteredSales.length > 0 ? filteredSales[0].total : 0;
         const filteredCount = filteredSales.length > 0 ? filteredSales[0].count : 0;
+        const filteredProfit = filteredSales.length > 0 ? filteredSales[0].profit : 0;
 
         // Aggregate monthly sales
         const monthSales = await Sale.aggregate([
             { $match: { date: { $gte: firstDayOfMonth } } },
-            { $group: { _id: null, total: { $sum: '$totalAmount' } } }
+            { $group: { _id: null, total: { $sum: '$totalAmount' }, profit: { $sum: '$profit' } } }
         ]);
 
         const monthlyTotal = monthSales.length > 0 ? monthSales[0].total : 0;
+        const monthlyProfit = monthSales.length > 0 ? monthSales[0].profit : 0;
 
         // Low Stock Products
         const lowStockProducts = await Product.find({ stock: { $lte: 5 } }).sort({ stock: 1 }).limit(10);
@@ -63,7 +65,9 @@ exports.renderDashboard = async (req, res) => {
             user: req.session,
             filteredTotal,
             filteredCount,
+            filteredProfit,
             monthlyTotal,
+            monthlyProfit,
             lowStockProducts,
             recentSales,
             topProducts,

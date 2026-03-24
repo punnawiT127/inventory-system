@@ -293,9 +293,16 @@ extraJs: `
                     title: 'สำเร็จ!',
                     text: 'ทำรายการขายสำเร็จแล้ว',
                     icon: 'success',
-                    confirmButtonColor: 'var(--primary)',
-                    confirmButtonText: 'ตกลง'
-                }).then(() => {
+                    showCancelButton: true,
+                    confirmButtonColor: '#4F46E5', // Primary
+                    cancelButtonColor: '#6B7280', // Gray/Muted
+                    confirmButtonText: 'พิมพ์ใบเสร็จ',
+                    cancelButtonText: 'ปิดหน้าต่างล้างตะกร้า'
+                }).then((result) => {
+                    if (result.isConfirmed && data.saleId) {
+                        // Open receipt in a new popup window suitable for printing
+                        window.open('/sale/receipt/' + data.saleId, '_blank', 'width=350,height=600');
+                    }
                     window.location.reload();
                 });
             } else {

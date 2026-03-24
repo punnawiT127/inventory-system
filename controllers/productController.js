@@ -26,7 +26,7 @@ exports.getProducts = async (req, res) => {
 // Add new product
 exports.addProduct = async (req, res) => {
     try {
-        const { code, name, category, price, stock, weight, unit } = req.body;
+        const { code, name, category, costPrice, price, stock, weight, unit } = req.body;
 
         // Check if code exists
         const existing = await Product.findOne({ code });
@@ -35,7 +35,7 @@ exports.addProduct = async (req, res) => {
         }
 
         const newProduct = new Product({
-            code, name, category, price, stock, weight: weight || 0, unit: unit || 'ชิ้น'
+            code, name, category, costPrice: costPrice || 0, price, stock, weight: weight || 0, unit: unit || 'ชิ้น'
         });
 
         if (['กิโลกรัม', 'กรัม', 'ขีด'].includes(newProduct.unit) && (!weight || weight == 0)) {
@@ -54,7 +54,7 @@ exports.addProduct = async (req, res) => {
 exports.updateProduct = async (req, res) => {
     try {
         const { id } = req.params;
-        const { code, name, category, price, stock, weight, unit } = req.body;
+        const { code, name, category, costPrice, price, stock, weight, unit } = req.body;
 
         if (code) {
             const existing = await Product.findOne({ code, _id: { $ne: id } });
@@ -64,7 +64,7 @@ exports.updateProduct = async (req, res) => {
         }
 
         const updateData = {
-            code, name, category, price, stock, weight: weight || 0, unit: unit || 'ชิ้น'
+            code, name, category, costPrice: costPrice || 0, price, stock, weight: weight || 0, unit: unit || 'ชิ้น'
         };
 
         if (['กิโลกรัม', 'กรัม', 'ขีด'].includes(updateData.unit) && (!weight || weight == 0)) {
