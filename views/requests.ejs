@@ -1,0 +1,78 @@
+<%- include('layout', { title: 'จัดการคำร้องขอ' , user: user, body: ` 
+<div class="card" style="margin-bottom: 2rem;">
+    <div class="flex items-center" style="justify-content: space-between; margin-bottom: 1.5rem;">
+        <h2>คำร้องขออนุมัติการแก้ไขสต็อก (Stock Requests)</h2>
+    </div>
+
+    ${success ? `
+    <div class="alert" style="background-color: #D1FAE5; color: var(--secondary); border: 1px solid #34D399; margin-bottom: 1rem;">
+        ${success}
+    </div>
+    ` : ''}
+
+    ${error ? `
+    <div class="alert alert-danger" style="margin-bottom: 1rem;">
+        ${error}
+    </div>
+    ` : ''}
+
+    <div class="table-responsive">
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--border); color: var(--text-muted);">
+                    <th style="padding: 1rem;">วันที่ / เวลา</th>
+                    <th style="padding: 1rem;">พนักงานผู้ขอ</th>
+                    <th style="padding: 1rem;">สินค้า</th>
+                    <th style="padding: 1rem; text-align: center;">สต็อกเดิม</th>
+                    <th style="padding: 1rem; text-align: center;">สต็อกใหม่</th>
+                    <th style="padding: 1rem; text-align: center;">สถานะ</th>
+                    <th style="padding: 1rem; text-align: center;">จัดการ</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${requests.length === 0 ? `
+                <tr>
+                    <td colspan="7" class="text-center text-muted" style="padding: 2rem;">
+                        ไม่มีคำร้องขอในขณะนี้
+                    </td>
+                </tr>
+                ` : requests.map(req => `
+                <tr style="border-bottom: 1px solid var(--border);">
+                    <td style="padding: 1rem;">${new Date(req.requestDate).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' })}</td>
+                    <td style="padding: 1rem;">${req.requestedBy ? req.requestedBy.username : '-'}</td>
+                    <td style="padding: 1rem;">
+                        <strong>${req.product ? req.product.code : '-'}</strong><br>
+                        <span style="font-size: 0.875rem; color: var(--text-muted);">${req.product ? req.product.name : 'สินค้าถูกลบแล้ว'}</span>
+                    </td>
+                    <td style="padding: 1rem; text-align: center; color: var(--warning); font-weight: bold;">
+                        ${req.oldStock} ${req.product ? req.product.unit || 'ชิ้น' : ''}
+                    </td>
+                    <td style="padding: 1rem; text-align: center; color: var(--secondary); font-weight: bold;">
+                        ${req.newStock} ${req.product ? req.product.unit || 'ชิ้น' : ''}
+                    </td>
+                    <td style="padding: 1rem; text-align: center;">
+                        ${req.status === 'Pending' ? `<span style="background: rgba(245, 158, 11, 0.2); color: var(--warning); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.875rem;">รออนุมัติ</span>` :
+                          req.status === 'Approved' ? `<span style="background: rgba(16, 185, 129, 0.2); color: var(--secondary); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.875rem;">อนุมัติแล้ว</span>` :
+                          `<span style="background: rgba(239, 68, 68, 0.2); color: var(--danger); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.875rem;">ปฏิเสธ</span>`}
+                        ${req.resolvedBy ? `<div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">โดย: ${req.resolvedBy.username}</div>` : ''}
+                    </td>
+                    <td style="padding: 1rem; text-align: center;">
+                        ${req.status === 'Pending' && req.product ? `
+                            <form action="/requests/resolve/${req._id}" method="POST" style="display:inline-block;">
+                                <input type="hidden" name="action" value="approve">
+                                <button type="submit" class="btn btn-primary" style="padding: 0.5rem; font-size: 0.875rem; margin-right: 0.25rem;" onclick="return confirm('ยืนยันการอนุมัติปรับจำนวนสต็อกสินค้า?');">อนุมัติ</button>
+                            </form>
+                            <form action="/requests/resolve/${req._id}" method="POST" style="display:inline-block;">
+                                <input type="hidden" name="action" value="reject">
+                                <button type="submit" class="btn" style="background-color: #FEF2F2; color: var(--danger); padding: 0.5rem; font-size: 0.875rem;" onclick="return confirm('ยืนยันการปฏิเสธคำร้องขอ?');">ปฏิเสธ</button>
+                            </form>
+                        ` : '-'}
+                    </td>
+                </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    </div>
+</div>
+`
+}) %>

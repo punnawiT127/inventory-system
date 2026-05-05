@@ -1,4 +1,5 @@
 const Product = require('../models/Product');
+const lineService = require('../services/lineService');
 
 // Get all products
 exports.getProducts = async (req, res) => {
@@ -31,6 +32,7 @@ exports.addProduct = async (req, res) => {
         // Check if code exists
         const existing = await Product.findOne({ code });
         if (existing) {
+            lineService.notifyDuplicateBarcode(code, name, existing.name);
             return res.redirect('/products?error=รหัสสินค้านี้มีอยู่ในระบบแล้ว (Code already exists)');
         }
 
@@ -59,6 +61,7 @@ exports.updateProduct = async (req, res) => {
         if (code) {
             const existing = await Product.findOne({ code, _id: { $ne: id } });
             if (existing) {
+                lineService.notifyDuplicateBarcode(code, name, existing.name);
                 return res.redirect(`/products?error=รหัสสินค้า '${code}' นี้ซ้ำกับสินค้าอื่นในระบบ (Barcode already exists)`);
             }
         }

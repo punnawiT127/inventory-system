@@ -83,6 +83,7 @@ exports.processSale = async (req, res) => {
 
             items.push({
                 product: product._id,
+                productName: product.name,
                 quantity: item.quantity,
                 priceAtSale: product.price,
                 costPriceAtSale: costAtSale,
@@ -119,7 +120,7 @@ exports.processSale = async (req, res) => {
         await sale.save();
 
         // Fire notifications asynchronously
-        lineService.notifyNewSale(totalAmount, items.length, req.session.username);
+        lineService.notifyNewSale(totalAmount, items, req.session.username);
 
         for (const prod of lowStockAlerts) {
             lineService.notifyLowStock(prod);

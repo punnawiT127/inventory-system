@@ -175,23 +175,6 @@ body: `
 
     <div>
         <div class="panel" style="margin-bottom: 1.5rem;">
-            <div class="panel-title">สินค้าขายดี (Top Sellers)</div>
-            ${topProducts.length === 0 ? `
-            <div class="text-center text-muted" style="padding: 2rem;">ไม่มีข้อมูล</div>
-            ` : `
-            ${topProducts.map(tp => `
-            <div class="list-item">
-                <div>
-                    <div style="font-weight: 500;">${tp.productDetails.name}</div>
-                    <div style="font-size: 0.75rem; color: var(--text-muted);">${tp.productDetails.code}</div>
-                </div>
-                <div style="font-weight: 600; color: var(--primary);">${tp.totalSold} ชิ้น</div>
-            </div>
-            `).join('')}
-            `}
-        </div>
-
-        <div class="panel">
             <div class="panel-title" style="color: var(--danger);">ต้องเติมสต็อกด่วน</div>
             ${lowStockProducts.length === 0 ? `
             <div class="text-center text-muted" style="padding: 2rem;">สต็อกพร้อมขาย</div>
@@ -203,6 +186,23 @@ body: `
                     <div style="font-size: 0.75rem; color: var(--text-muted);">${lp.code}</div>
                 </div>
                 <div style="font-weight: 700; color: var(--danger);">${lp.stock} ชิ้น</div>
+            </div>
+            `).join('')}
+            `}
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">สินค้าขายดี (Top Sellers)</div>
+            ${topProducts.length === 0 ? `
+            <div class="text-center text-muted" style="padding: 2rem;">ไม่มีข้อมูล</div>
+            ` : `
+            ${topProducts.map(tp => `
+            <div class="list-item">
+                <div>
+                    <div style="font-weight: 500;">${tp.productDetails.name}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">${tp.productDetails.code}</div>
+                </div>
+                <div style="font-weight: 600; color: var(--primary);">${tp.totalSold} ชิ้น</div>
             </div>
             `).join('')}
             `}

@@ -29,13 +29,26 @@ exports.notifyLowStock = async (product) => {
     await sendLineNotification(message);
 };
 
-exports.notifyNewSale = async (amount, itemCount, sellerName) => {
-    const message = `💰 มียอดขายใหม่!\nยอดรวม: ฿${amount.toLocaleString('th-TH')}\nจำนวน: ${itemCount} รายการ\nโดย: ${sellerName}`;
+exports.notifyNewSale = async (amount, items, sellerName) => {
+    let itemsList = items.map(item => {
+        return `- ${item.productName || 'สินค้า'} x${item.quantity} (฿${item.subTotal.toLocaleString('th-TH')})`;
+    }).join('\n');
+    const message = `💰 มียอดขายใหม่!\nยอดรวม: ฿${amount.toLocaleString('th-TH')}\nจำนวน: ${items.length} รายการ\nโดย: ${sellerName}\n\nรายการสินค้า:\n${itemsList}`;
     await sendLineNotification(message);
 };
 
 exports.notifyDailySummary = async (totalSales, totalAmount) => {
     const message = `📊 สรุปยอดขายประจำวัน\nจำนวนบิล: ${totalSales}\nยอดรวมทั้งสิ้น: ฿${totalAmount.toLocaleString('th-TH')}`;
+    await sendLineNotification(message);
+};
+
+exports.notifyDuplicateBarcode = async (barcode, attemptedName, existingName) => {
+    const message = `⚠️ แจ้งเตือนบาร์โค้ดซ้ำ\nมีการพยายามเพิ่มสินค้าใหม่ด้วยบาร์โค้ด: ${barcode} (${attemptedName})\nแต่มีสินค้านี้อยู่ในระบบแล้ว: ${existingName}`;
+    await sendLineNotification(message);
+};
+
+exports.notifyNewRequest = async (product, employeeName, oldStock, newStock) => {
+    const message = `📝 มีคำร้องขอแก้ไขสต็อก\nสินค้า: ${product.name} (${product.code})\nผู้ขอ: ${employeeName}\nสต็อกเดิม: ${oldStock} ${product.unit || 'ชิ้น'}\nสต็อกใหม่: ${newStock} ${product.unit || 'ชิ้น'}\nกรุณาเข้าสู่ระบบเพื่ออนุมัติ`;
     await sendLineNotification(message);
 };
 

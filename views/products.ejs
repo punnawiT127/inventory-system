@@ -288,6 +288,8 @@ extraJs: `
         }
     }
 
+    const userRole = '${user.userRole || user.role}';
+
     function openEditModal(productId) {
         const product = productsData.find(p => p._id === productId);
         if (!product) {
@@ -295,7 +297,11 @@ extraJs: `
             return;
         }
 
-        document.getElementById('editForm').action = '/products/update/' + productId;
+        const form = document.getElementById('editForm');
+        form.action = '/products/update/' + productId;
+        form.setAttribute('data-original-stock', product.stock);
+        form.setAttribute('data-product-id', productId);
+        
         document.getElementById('editCode').value = product.code;
         document.getElementById('editName').value = product.name;
         document.getElementById('editCategory').value = product.category;
@@ -306,6 +312,43 @@ extraJs: `
         document.getElementById('editUnit').value = product.unit || 'ชิ้น';
         document.getElementById('editModal').classList.add('modal-active');
     }
+
+    document.getElementById('editForm').addEventListener('submit', async function(e) {
+        if (userRole !== 'Owner') {
+            const originalStock = parseInt(this.getAttribute('data-original-stock'), 10);
+            const newStock = parseInt(document.getElementById('editStock').value, 10);
+            const productId = this.getAttribute('data-product-id');
+            
+            if (originalStock !== newStock) {
+                e.preventDefault(); // Stop normal submission
+                
+                // Show loading
+                Swal.fire({
+                    title: 'กำลังส่งคำร้อง...',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+                
+                try {
+                    const res = await fetch('/api/requests/submit', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ productId, oldStock: originalStock, newStock })
+                    });
+                    const data = await res.json();
+                    
+                    if (data.success) {
+                        Swal.fire('สำเร็จ!', 'ส่งคำร้องขอแก้ไขสต็อกเรียบร้อยแล้ว รอการอนุมัติจากเจ้าของร้าน', 'success')
+                        .then(() => { window.location.reload(); });
+                    } else {
+                        Swal.fire('ข้อผิดพลาด', data.message, 'error');
+                    }
+                } catch(err) {
+                    Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อระบบได้', 'error');
+                }
+            }
+        }
+    });
 
     // Event delegation for edit buttons
     document.addEventListener('click', (e) => {

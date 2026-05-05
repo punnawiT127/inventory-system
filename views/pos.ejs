@@ -73,12 +73,13 @@ body: `
 
 <div class="pos-container">
     <div class="pos-products" id="pos-products-container" style="display: block;">
-        <div style="margin-bottom: 2rem;">
+        <div style="margin-bottom: 1.5rem;">
+            <input type="text" id="pos-search" class="form-control" placeholder="🔍 ค้นหาสินค้าด้วยชื่อ หรือ สแกนบาร์โค้ดลงในช่องนี้..." style="padding: 1rem; font-size: 1.1rem; border-radius: var(--radius-lg); border: 2px solid var(--border); width: 100%; margin-bottom: 1rem;" onkeyup="searchPOSProducts()" autofocus>
             <button class="btn btn-primary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 1rem; font-size: 1.1rem; border-radius: var(--radius-lg); background-color: var(--secondary);" onclick="openScanner()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M4 7V4h3"></path><path d="M20 7V4h-3"></path><path d="M4 17v3h3"></path><path d="M20 17v3h-3"></path><rect x="7" y="10" width="10" height="4" rx="1"></rect>
                 </svg>
-                สแกนบาร์โค้ดสินค้า
+                สแกนบาร์โค้ดสินค้า (จากกล้อง)
             </button>
         </div>
 
@@ -249,9 +250,20 @@ extraJs: `
             minusBtn.textContent = '-';
             minusBtn.onclick = () => updateQty(item.id, -1);
             
-            const qtySpan = document.createElement('span');
-            qtySpan.style.cssText = 'font-weight: 600; width: 25px; text-align: center;';
-            qtySpan.textContent = item.quantity;
+            const qtyInput = document.createElement('input');
+            qtyInput.type = 'number';
+            qtyInput.value = item.quantity;
+            qtyInput.min = '1';
+            qtyInput.max = item.maxStock;
+            qtyInput.style.cssText = 'font-weight: 600; width: 60px; text-align: center; border: 1px solid var(--border); border-radius: 4px; padding: 4px; font-size: 1rem;';
+            qtyInput.onchange = (e) => {
+                const newVal = parseInt(e.target.value, 10);
+                if (isNaN(newVal) || newVal <= 0) {
+                    updateQty(item.id, -item.quantity);
+                } else {
+                    updateQty(item.id, newVal - item.quantity);
+                }
+            };
             
             const plusBtn = document.createElement('button');
             plusBtn.className = 'qty-btn';
@@ -259,7 +271,7 @@ extraJs: `
             plusBtn.onclick = () => updateQty(item.id, 1);
             
             qtyDiv.appendChild(minusBtn);
-            qtyDiv.appendChild(qtySpan);
+            qtyDiv.appendChild(qtyInput);
             qtyDiv.appendChild(plusBtn);
             
             itemEl.appendChild(infoDiv);
@@ -301,7 +313,7 @@ extraJs: `
                 }).then((result) => {
                     if (result.isConfirmed && data.saleId) {
                         // Open receipt in a new popup window suitable for printing
-                        window.open('/sale/receipt/' + data.saleId, '_blank', 'width=350,height=600');
+                        window.open('/receipt/' + data.saleId, '_blank', 'width=350,height=600');
                     }
                     window.location.reload();
                 });
@@ -384,5 +396,31 @@ extraJs: `
     }
 
     function onScanFailure(error) {}
+
+    function searchPOSProducts() {
+        const input = document.getElementById('pos-search').value.toLowerCase();
+        const productCards = document.querySelectorAll('.js-product-item');
+        
+        productCards.forEach(card => {
+            const name = card.querySelector('h4').textContent.toLowerCase();
+            const code = card.querySelector('span').textContent.toLowerCase();
+            if (name.includes(input) || code.includes(input)) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        
+        // Hide/show category headers
+        const categories = document.querySelectorAll('.category-section');
+        categories.forEach(category => {
+            const visibleCards = category.querySelectorAll('.js-product-item[style="display: block;"]');
+            if (visibleCards.length === 0 && input !== '') {
+                category.style.display = 'none';
+            } else {
+                category.style.display = 'block';
+            }
+        });
+    }
 ` 
 }) %>
