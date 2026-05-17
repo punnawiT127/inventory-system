@@ -50,6 +50,9 @@ exports.logout = (req, res) => {
 // Middleware to protect routes
 exports.requireAuth = (req, res, next) => {
     if (!req.session.userId) {
+        if (req.path.startsWith('/api/') || req.xhr) {
+            return res.status(401).json({ success: false, message: 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่' });
+        }
         return res.redirect('/login');
     }
     next();

@@ -381,6 +381,19 @@ extraJs: `
         document.getElementById('editStock').value = product.stock;
         document.getElementById('editWeight').value = product.weight || 0;
         document.getElementById('editUnit').value = product.unit || 'ชิ้น';
+        
+        if (userRole !== 'Owner') {
+            document.getElementById('editCode').readOnly = true;
+            document.getElementById('editName').readOnly = true;
+            document.getElementById('editCategory').disabled = true;
+            document.getElementById('editCostPrice').readOnly = true;
+            document.getElementById('editPrice').readOnly = true;
+            document.getElementById('editWeight').readOnly = true;
+            document.getElementById('editUnit').disabled = true;
+            const submitBtn = document.querySelector('#editForm button[type="submit"]');
+            if (submitBtn) submitBtn.textContent = 'ส่งคำร้องขอแก้ไขสต็อก';
+        }
+        
         document.getElementById('editModal').classList.add('modal-active');
     }
 
@@ -406,6 +419,21 @@ extraJs: `
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ productId, oldStock: originalStock, newStock })
                     });
+                    
+                    if (res.redirected && res.url.includes('/login')) {
+                        return Swal.fire('เซสชันหมดอายุ', 'กรุณาเข้าสู่ระบบใหม่', 'warning').then(() => window.location.href = '/login');
+                    }
+                    
+                    if (!res.ok) {
+                        const contentType = res.headers.get("content-type");
+                        if (contentType && contentType.includes("application/json")) {
+                            const errorData = await res.json();
+                            throw new Error(errorData.message || 'เกิดข้อผิดพลาดจากเซิร์ฟเวอร์');
+                        } else {
+                            throw new Error('เซิร์ฟเวอร์ไม่ตอบสนอง หรือคุณไม่ได้เข้าสู่ระบบ (รบกวนรีเฟรชหน้าเว็บ)');
+                        }
+                    }
+                    
                     const data = await res.json();
                     
                     if (data.success) {
@@ -415,7 +443,7 @@ extraJs: `
                         Swal.fire('ข้อผิดพลาด', data.message, 'error');
                     }
                 } catch(err) {
-                    Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อระบบได้', 'error');
+                    Swal.fire('ข้อผิดพลาด', err.message || 'ไม่สามารถเชื่อมต่อระบบได้', 'error');
                 }
             }
         }
