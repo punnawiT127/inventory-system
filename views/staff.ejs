@@ -1,4 +1,47 @@
-<%- include('layout', { title: 'จัดการพนักงาน (Staff Management)' , user: user, body: ` 
+<%- include('layout', { title: 'จัดการพนักงาน (Staff Management)' , user: user, extraCss: `
+    @media (max-width: 768px) {
+        .table-responsive table thead { display: none; }
+        .table-responsive table tbody tr {
+            display: block;
+            border: 1px solid var(--border) !important;
+            border-radius: var(--radius-lg);
+            margin-bottom: 1rem;
+            padding: 1rem;
+            box-shadow: var(--shadow-sm);
+            background: var(--bg-card);
+        }
+        .table-responsive table td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0 !important;
+            text-align: right !important;
+            border-bottom: 1px dashed var(--border) !important;
+        }
+        .table-responsive table td:last-child {
+            border-bottom: none !important;
+            margin-top: 0.5rem;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+        .table-responsive table td::before {
+            content: attr(data-label);
+            font-weight: 500;
+            color: var(--text-muted);
+            text-align: left;
+            margin-right: 1rem;
+        }
+        .table-responsive {
+            border: none !important;
+            overflow: visible !important;
+        }
+        .table-responsive table td.empty-message {
+            justify-content: center !important;
+            text-align: center !important;
+            border: none !important;
+        }
+    }
+`, body: ` 
 <div class="card" style="margin-bottom: 2rem;">
     <div class="header-actions">
         <h2>จัดการบัญชีพนักงาน (Staff Accounts)</h2>
@@ -45,21 +88,21 @@
                 </tr>
                 ` : staffList.map(staff => `
                 <tr style="border-bottom: 1px solid var(--border);">
-                    <td style="padding: 1rem;"><strong>${staff.username}</strong></td>
-                    <td style="padding: 1rem;">
+                    <td data-label="ชื่อผู้ใช้งาน" style="padding: 1rem;"><strong>${staff.username}</strong></td>
+                    <td data-label="สิทธิ์" style="padding: 1rem;">
                         <span style="background: rgba(16, 185, 129, 0.1); padding: 0.25rem 0.75rem; border-radius: 99px; font-size: 0.875rem; color: var(--secondary);">
                             ${staff.role}
                         </span>
                     </td>
-                    <td style="padding: 1rem; color: var(--text-muted);">${new Date(staff.createdAt).toLocaleDateString('th-TH')}</td>
-                    <td style="padding: 1rem; text-align: center;">
-                        <div class="action-buttons-mobile">
+                    <td data-label="วันที่เพิ่ม" style="padding: 1rem; color: var(--text-muted);">${new Date(staff.createdAt).toLocaleDateString('th-TH')}</td>
+                    <td data-label="" style="padding: 1rem; text-align: center;">
+                        <div class="action-buttons-mobile" style="display: flex; gap: 0.5rem; width: 100%;">
                             <button class="btn" onclick="openResetModal('${staff._id}', '${staff.username}')"
-                                style="background-color: var(--bg-input); color: var(--text-main); padding: 0.5rem; font-size: 0.875rem;">
+                                style="background-color: var(--bg-input); color: var(--text-main); padding: 0.5rem; font-size: 0.875rem; flex: 1;">
                                 เปลี่ยนรหัส
                             </button>
 
-                            <form action="/staff/delete/${staff._id}" method="POST" style="display:inline; width: 100%;"
+                            <form action="/staff/delete/${staff._id}" method="POST" style="flex: 1;"
                                 onsubmit="return confirm('ยืนยันการลบบัญชีพนักงาน [${staff.username}] ใช่หรือไม่?');">
                                 <button type="submit" class="btn btn-block"
                                     style="background-color: #FEF2F2; color: var(--danger); padding: 0.5rem; font-size: 0.875rem;">
