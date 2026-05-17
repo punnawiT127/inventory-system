@@ -35,14 +35,32 @@
             border: none !important;
             overflow: visible !important;
         }
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 1rem;
+        }
+        .page-header h2 {
+            font-size: 1.25rem;
+            margin: 0;
+        }
+        .header-buttons {
+            width: 100%;
+        }
+        .header-buttons button {
+            flex: 1;
+            justify-content: center;
+            padding: 0.5rem;
+            font-size: 0.875rem;
+        }
     }
 `, body: ` 
 <div id="products-internal-store" style="display: none;" data-products='${JSON.stringify(products).replace(/'/g, "&#39;")}'></div>
 
 <div class="card" style="margin-bottom: 2rem;">
-    <div class="flex items-center" style="justify-content: space-between; margin-bottom: 1.5rem;">
+    <div class="flex items-center page-header" style="justify-content: space-between; margin-bottom: 1.5rem;">
         <h2>รายการสินค้าคงคลัง (Inventory)</h2>
-        <div style="display: flex; gap: 0.5rem;">
+        <div class="header-buttons" style="display: flex; gap: 0.5rem;">
             <button class="btn" style="background-color: var(--bg-input); color: var(--text-main); display: flex; align-items: center; gap: 0.5rem;" onclick="openScanner()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M4 7V4h3"></path><path d="M20 7V4h-3"></path><path d="M4 17v3h3"></path><path d="M20 17v3h-3"></path><rect x="7" y="10" width="10" height="4" rx="1"></rect>
