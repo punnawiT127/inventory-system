@@ -35,6 +35,10 @@
             border: none !important;
             overflow: visible !important;
         }
+        .table-responsive table td.empty-message {
+            justify-content: center !important;
+            text-align: center !important;
+        }
     }
 `, body: ` 
 <div class="card" style="margin-bottom: 2rem;">
@@ -70,7 +74,7 @@
             <tbody>
                 ${requests.length === 0 ? `
                 <tr>
-                    <td colspan="7" class="text-center text-muted" style="padding: 2rem;">
+                    <td colspan="7" class="text-center text-muted empty-message" style="padding: 2rem;">
                         ไม่มีคำร้องขอในขณะนี้
                     </td>
                 </tr>
