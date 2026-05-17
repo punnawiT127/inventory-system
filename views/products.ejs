@@ -1,4 +1,42 @@
-<%- include('layout', { title: 'จัดการคลังสินค้า' , user: user, body: ` 
+<%- include('layout', { title: 'จัดการคลังสินค้า' , user: user, extraCss: `
+    @media (max-width: 768px) {
+        #products-table thead { display: none; }
+        #products-table tbody tr {
+            display: block;
+            border: 1px solid var(--border) !important;
+            border-radius: var(--radius-lg);
+            margin-bottom: 1rem;
+            padding: 1rem;
+            box-shadow: var(--shadow-sm);
+            background: var(--bg-card);
+        }
+        #products-table td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0 !important;
+            text-align: right !important;
+            border-bottom: 1px dashed var(--border) !important;
+        }
+        #products-table td:last-child {
+            border-bottom: none !important;
+            margin-top: 0.5rem;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+        #products-table td::before {
+            content: attr(data-label);
+            font-weight: 500;
+            color: var(--text-muted);
+            text-align: left;
+            margin-right: 1rem;
+        }
+        .table-responsive {
+            border: none !important;
+            overflow: visible !important;
+        }
+    }
+`, body: ` 
 <div id="products-internal-store" style="display: none;" data-products='${JSON.stringify(products).replace(/'/g, "&#39;")}'></div>
 
 <div class="card" style="margin-bottom: 2rem;">
@@ -58,18 +96,18 @@
                 </tr>
                 ` : products.map(product => `
                 <tr style="border-bottom: 1px solid var(--border);">
-                    <td style="padding: 1rem;"><strong>${product.code}</strong></td>
-                    <td style="padding: 1rem;">${product.name}</td>
-                    <td style="padding: 1rem;">
+                    <td data-label="รหัส (Code)" style="padding: 1rem;"><strong>${product.code}</strong></td>
+                    <td data-label="ชื่อสินค้า (Name)" style="padding: 1rem;">${product.name}</td>
+                    <td data-label="หมวดหมู่ (Category)" style="padding: 1rem;">
                         <span
                             style="background: var(--bg-app); padding: 0.25rem 0.75rem; border-radius: 99px; font-size: 0.875rem; color: var(--text-muted);">
                             ${product.category}
                         </span>
                     </td>
-                    <td style="padding: 1rem; text-align: center; color: var(--text-muted);">${product.unit || 'ชิ้น'}</td>
-                    <td style="padding: 1rem; text-align: right; color: var(--text-muted);">฿${(product.costPrice || 0).toLocaleString('th-TH')}</td>
-                    <td style="padding: 1rem; text-align: right; color: var(--secondary); font-weight: 600;">฿${product.price.toLocaleString('th-TH')}</td>
-                    <td style="padding: 1rem; text-align: right;">
+                    <td data-label="หน่วย (Unit)" style="padding: 1rem; text-align: center; color: var(--text-muted);">${product.unit || 'ชิ้น'}</td>
+                    <td data-label="ต้นทุน (Cost)" style="padding: 1rem; text-align: right; color: var(--text-muted);">฿${(product.costPrice || 0).toLocaleString('th-TH')}</td>
+                    <td data-label="ราคาขาย (Price)" style="padding: 1rem; text-align: right; color: var(--secondary); font-weight: 600;">฿${product.price.toLocaleString('th-TH')}</td>
+                    <td data-label="คงเหลือ (Stock)" style="padding: 1rem; text-align: right;">
                         ${(product.stock <= 5 && product.stock> 0) ? `
                             <span style="color: var(--warning); font-weight: 600;">${product.stock} ${product.unit || 'ชิ้น'}</span>
                             ` : product.stock === 0 ? `
@@ -78,10 +116,10 @@
                             <span style="color: var(--secondary); font-weight: 600;">${product.stock} ${product.unit || 'ชิ้น'}</span>
                             `}
                     </td>
-                    <td style="padding: 1rem; text-align: right;">
+                    <td data-label="น้ำหนัก (Weight)" style="padding: 1rem; text-align: right;">
                         ${(product.weight > 0) ? `${product.weight} กก.` : (['กิโลกรัม', 'กรัม', 'ขีด'].includes(product.unit) ? `${product.stock} ${product.unit}` : '-')}
                     </td>
-                    <td style="padding: 1rem; text-align: center;">
+                    <td data-label="" style="padding: 1rem; text-align: center;">
                         <button class="btn js-edit-product"
                             style="background-color: var(--bg-input); color: var(--text-main); padding: 0.5rem; font-size: 0.875rem;"
                             data-id="${product._id}">
