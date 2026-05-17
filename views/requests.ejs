@@ -42,7 +42,7 @@
     }
 `, body: ` 
 <div class="card" style="margin-bottom: 2rem;">
-    <div class="flex items-center" style="justify-content: space-between; margin-bottom: 1.5rem;">
+    <div class="header-actions page-header">
         <h2>คำร้องขออนุมัติการแก้ไขสต็อก (Stock Requests)</h2>
     </div>
 
@@ -100,14 +100,16 @@
                     </td>
                     <td data-label="" style="padding: 1rem; text-align: center; display: flex; justify-content: flex-end;">
                         ${req.status === 'Pending' && req.product ? `
-                            <form action="/requests/resolve/${req._id}" method="POST" style="display:inline-block;">
-                                <input type="hidden" name="action" value="approve">
-                                <button type="submit" class="btn btn-primary" style="padding: 0.5rem; font-size: 0.875rem; margin-right: 0.25rem;" onclick="return confirm('ยืนยันการอนุมัติปรับจำนวนสต็อกสินค้า?');">อนุมัติ</button>
-                            </form>
-                            <form action="/requests/resolve/${req._id}" method="POST" style="display:inline-block;">
-                                <input type="hidden" name="action" value="reject">
-                                <button type="submit" class="btn" style="background-color: #FEF2F2; color: var(--danger); padding: 0.5rem; font-size: 0.875rem;" onclick="return confirm('ยืนยันการปฏิเสธคำร้องขอ?');">ปฏิเสธ</button>
-                            </form>
+                            <div class="action-buttons-mobile" style="display: flex; gap: 0.5rem; justify-content: flex-end; width: 100%;">
+                                <form action="/requests/resolve/${req._id}" method="POST" style="flex: 1;">
+                                    <input type="hidden" name="action" value="approve">
+                                    <button type="submit" class="btn btn-primary btn-block" style="padding: 0.5rem; font-size: 0.875rem;" onclick="return confirm('ยืนยันการอนุมัติปรับจำนวนสต็อกสินค้า?');">อนุมัติ</button>
+                                </form>
+                                <form action="/requests/resolve/${req._id}" method="POST" style="flex: 1;">
+                                    <input type="hidden" name="action" value="reject">
+                                    <button type="submit" class="btn btn-block" style="background-color: #FEF2F2; color: var(--danger); padding: 0.5rem; font-size: 0.875rem;" onclick="return confirm('ยืนยันการปฏิเสธคำร้องขอ?');">ปฏิเสธ</button>
+                                </form>
+                            </div>
                         ` : '-'}
                     </td>
                 </tr>

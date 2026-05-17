@@ -65,7 +65,12 @@
     } 
     @media (max-width: 768px) { 
         .pos-container { flex-direction: column; } 
-        .pos-cart { position: static; max-height: none; } 
+        .pos-cart { 
+            order: -1; /* Move cart to the top on mobile */
+            position: static; 
+            max-height: none; 
+            margin-bottom: 1rem;
+        } 
     } 
 `, 
 body: ` 

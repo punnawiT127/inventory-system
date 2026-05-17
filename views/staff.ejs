@@ -1,8 +1,8 @@
 <%- include('layout', { title: 'จัดการพนักงาน (Staff Management)' , user: user, body: ` 
 <div class="card" style="margin-bottom: 2rem;">
-    <div class="flex items-center" style="justify-content: space-between; margin-bottom: 1.5rem;">
+    <div class="header-actions">
         <h2>จัดการบัญชีพนักงาน (Staff Accounts)</h2>
-        <button class="btn btn-primary" onclick="openAddModal()" style="display: flex; align-items: center; gap: 0.5rem;">
+        <button class="btn btn-primary" onclick="openAddModal()" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -53,18 +53,20 @@
                     </td>
                     <td style="padding: 1rem; color: var(--text-muted);">${new Date(staff.createdAt).toLocaleDateString('th-TH')}</td>
                     <td style="padding: 1rem; text-align: center;">
-                        <button class="btn" onclick="openResetModal('${staff._id}', '${staff.username}')"
-                            style="background-color: var(--bg-input); color: var(--text-main); padding: 0.5rem; font-size: 0.875rem;">
-                            เปลี่ยนรหัส
-                        </button>
-
-                        <form action="/staff/delete/${staff._id}" method="POST" style="display:inline;"
-                            onsubmit="return confirm('ยืนยันการลบบัญชีพนักงาน [${staff.username}] ใช่หรือไม่?');">
-                            <button type="submit" class="btn"
-                                style="background-color: #FEF2F2; color: var(--danger); padding: 0.5rem; font-size: 0.875rem; margin-left: 0.5rem;">
-                                ลบ
+                        <div class="action-buttons-mobile">
+                            <button class="btn" onclick="openResetModal('${staff._id}', '${staff.username}')"
+                                style="background-color: var(--bg-input); color: var(--text-main); padding: 0.5rem; font-size: 0.875rem;">
+                                เปลี่ยนรหัส
                             </button>
-                        </form>
+
+                            <form action="/staff/delete/${staff._id}" method="POST" style="display:inline; width: 100%;"
+                                onsubmit="return confirm('ยืนยันการลบบัญชีพนักงาน [${staff.username}] ใช่หรือไม่?');">
+                                <button type="submit" class="btn btn-block"
+                                    style="background-color: #FEF2F2; color: var(--danger); padding: 0.5rem; font-size: 0.875rem;">
+                                    ลบ
+                                </button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
                 `).join('')}

@@ -51,6 +51,9 @@
         }
         .header-buttons {
             width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
         }
         .header-buttons button {
             flex: 1;
@@ -63,7 +66,7 @@
 <div id="products-internal-store" style="display: none;" data-products='${JSON.stringify(products).replace(/'/g, "&#39;")}'></div>
 
 <div class="card" style="margin-bottom: 2rem;">
-    <div class="flex items-center page-header" style="justify-content: space-between; margin-bottom: 1.5rem;">
+    <div class="header-actions page-header">
         <h2>รายการสินค้าคงคลัง (Inventory)</h2>
         <div class="header-buttons" style="display: flex; gap: 0.5rem;">
             <button class="btn" style="background-color: var(--bg-input); color: var(--text-main); display: flex; align-items: center; gap: 0.5rem;" onclick="openScanner()">
@@ -143,21 +146,23 @@
                         ${(product.weight > 0) ? `${product.weight} กก.` : (['กิโลกรัม', 'กรัม', 'ขีด'].includes(product.unit) ? `${product.stock} ${product.unit}` : '-')}
                     </td>
                     <td data-label="" style="padding: 1rem; text-align: center;">
-                        <button class="btn js-edit-product"
-                            style="background-color: var(--bg-input); color: var(--text-main); padding: 0.5rem; font-size: 0.875rem;"
-                            data-id="${product._id}">
-                            แก้ไข
-                        </button>
-
-                        ${(user.role === 'Owner' || user.userRole === 'Owner') ? `
-                        <form action="/products/delete/${product._id}" method="POST" style="display:inline;"
-                            onsubmit="return confirm('ยืนยันการลบสินค้านี้ใช่หรือไม่?');">
-                            <button type="submit" class="btn"
-                                style="background-color: #FEF2F2; color: var(--danger); padding: 0.5rem; font-size: 0.875rem; margin-left: 0.5rem;">
-                                ลบ
+                        <div class="action-buttons-mobile" style="display: flex; gap: 0.5rem; width: 100%;">
+                            <button class="btn js-edit-product"
+                                style="background-color: var(--bg-input); color: var(--text-main); padding: 0.5rem; font-size: 0.875rem; flex: 1;"
+                                data-id="${product._id}">
+                                แก้ไข
                             </button>
-                        </form>
-                        ` : ''}
+
+                            ${(user.role === 'Owner' || user.userRole === 'Owner') ? `
+                            <form action="/products/delete/${product._id}" method="POST" style="flex: 1;"
+                                onsubmit="return confirm('ยืนยันการลบสินค้านี้ใช่หรือไม่?');">
+                                <button type="submit" class="btn btn-block"
+                                    style="background-color: #FEF2F2; color: var(--danger); padding: 0.5rem; font-size: 0.875rem;">
+                                    ลบ
+                                </button>
+                            </form>
+                            ` : ''}
+                        </div>
                     </td>
                 </tr>
                 `).join('')}

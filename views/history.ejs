@@ -54,25 +54,25 @@
     }
 `, body: `
     <div class="history-card card-interactive">
-        <div class="history-header" style="flex-wrap: wrap; gap: 1rem;">
+        <div class="header-actions">
             <h2 class="history-title" style="margin: 0;">ประวัติการขาย (Sales History)</h2>
             <span class="badge" style="font-size: 0.875rem; padding: 0.5rem 1rem;">
                 ${sales.length} รายการ | ยอดรวม ฿${totalSum.toLocaleString('th-TH')}
             </span>
         </div>
 
-        <form method="GET" action="/history" style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; margin-bottom: 2rem; background: var(--bg-input); padding: 1rem; border-radius: var(--radius-md);">
-            <div style="flex: 1; min-width: 150px;">
+        <form method="GET" action="/history" class="header-actions" style="align-items: flex-end; margin-bottom: 2rem; background: var(--bg-input); padding: 1rem; border-radius: var(--radius-md);">
+            <div style="flex: 1; width: 100%;">
                 <label for="startDate" style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem;">ตั้งแต่วันที่</label>
                 <input type="date" id="startDate" name="startDate" value="${query.startDate || ''}" class="form-control" style="padding: 0.5rem; height: 40px;">
             </div>
-            <div style="flex: 1; min-width: 150px;">
+            <div style="flex: 1; width: 100%;">
                 <label for="endDate" style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem;">ถึงวันที่</label>
                 <input type="date" id="endDate" name="endDate" value="${query.endDate || ''}" class="form-control" style="padding: 0.5rem; height: 40px;">
             </div>
-            <div>
-                <button type="submit" class="btn btn-primary" style="height: 40px; padding: 0 1.5rem;">คัดกรอง</button>
-                <a href="/history" class="btn btn-secondary" style="height: 40px; padding: 0 1.5rem; margin-left: 0.5rem;">รีเซต</a>
+            <div style="display: flex; gap: 0.5rem; width: 100%;">
+                <button type="submit" class="btn btn-primary" style="height: 40px; flex: 1;">คัดกรอง</button>
+                <a href="/history" class="btn btn-secondary" style="height: 40px; flex: 1; display: flex; align-items: center; justify-content: center;">รีเซต</a>
             </div>
         </form>        ${sales.length === 0 ? `
             <div class="empty-state">
