@@ -96,3 +96,13 @@ exports.resolveRequest = async (req, res) => {
         res.redirect('/requests?error=เกิดข้อผิดพลาดในการจัดการคำร้อง');
     }
 };
+
+exports.getPendingCount = async (req, res) => {
+    try {
+        const count = await StockRequest.countDocuments({ status: 'Pending' });
+        res.json({ success: true, count });
+    } catch (err) {
+        console.error('Error counting pending requests:', err);
+        res.status(500).json({ success: false, count: 0 });
+    }
+};

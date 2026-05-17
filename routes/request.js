@@ -13,4 +13,7 @@ router.post('/requests/resolve/:id', requireOwner, requestController.resolveRequ
 // API route for employees to submit a request
 router.post('/api/requests/submit', express.json(), requestController.submitRequest);
 
+// API route for frontend badge notification
+router.get('/api/requests/count-pending', requireOwner, requestController.getPendingCount);
+
 module.exports = router;

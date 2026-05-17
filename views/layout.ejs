@@ -57,7 +57,10 @@
                     <% if (user.userRole==='Owner' ) { %>
                         <a href="/dashboard" class="nav-link">หน้าหลัก</a>
                         <a href="/staff" class="nav-link">พนักงาน</a>
-                        <a href="/requests" class="nav-link">คำร้องขอ</a>
+                        <a href="/requests" class="nav-link" style="position: relative; display: inline-block;">
+                            คำร้องขอ
+                            <span id="requests-badge" style="display: none; position: absolute; top: -5px; right: -15px; background-color: #EF4444; color: white; border-radius: 50%; font-size: 0.7rem; font-weight: bold; min-width: 18px; height: 18px; align-items: center; justify-content: center; padding: 0 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></span>
+                        </a>
                     <% } %>
                     <a href="/products" class="nav-link">สินค้าคลัง</a>
                     <a href="/pos" class="nav-link">ขายสินค้า (POS)</a>
@@ -101,6 +104,20 @@
                             mobileMenuBtn.innerHTML = '☰';
                         }
                     });
+                }
+
+                // Check for pending requests badge
+                const requestsBadge = document.getElementById('requests-badge');
+                if (requestsBadge) {
+                    fetch('/api/requests/count-pending')
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success && data.count > 0) {
+                                requestsBadge.textContent = data.count > 99 ? '99+' : data.count;
+                                requestsBadge.style.display = 'flex';
+                            }
+                        })
+                        .catch(err => console.error('Failed to fetch request count', err));
                 }
             </script>
 
