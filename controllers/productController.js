@@ -9,7 +9,7 @@ exports.getProducts = async (req, res) => {
             title: 'คลังสินค้า',
             user: req.session,
             products,
-            error: null,
+            error: req.query.error || null,
             success: req.query.success || null
         });
     } catch (err) {
@@ -67,18 +67,20 @@ exports.updateProduct = async (req, res) => {
         }
 
         const updateData = {
-            code, name, category, costPrice: costPrice || 0, price, stock, weight: weight || 0, unit: unit || 'ชิ้น'
+            name, category, costPrice: costPrice || 0, price, stock, weight: weight || 0, unit: unit || 'ชิ้น'
         };
+        
+        if (code) updateData.code = code;
 
         if (['กิโลกรัม', 'กรัม', 'ขีด'].includes(updateData.unit) && (!weight || weight == 0)) {
             updateData.weight = updateData.stock;
         }
 
-        await Product.findByIdAndUpdate(id, updateData);
+        await Product.findByIdAndUpdate(id, updateData, { runValidators: true });
 
         res.redirect('/products?success=อัปเดตข้อมูลสินค้าเรียบร้อยแล้ว (Product updated)');
     } catch (err) {
-        console.error(err);
+        console.error('Update Product Error:', err);
         res.redirect('/products?error=เกิดข้อผิดพลาดในการอัปเดตสินค้า (Error updating product)');
     }
 };
