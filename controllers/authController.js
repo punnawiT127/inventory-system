@@ -49,7 +49,7 @@ exports.logout = (req, res) => {
 
 // Middleware to protect routes
 exports.requireAuth = (req, res, next) => {
-    if (!req.session.userId) {
+    if (!req.session || !req.session.userId) {
         if (req.path.startsWith('/api/') || req.xhr) {
             return res.status(401).json({ success: false, message: 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่' });
         }
@@ -60,7 +60,7 @@ exports.requireAuth = (req, res, next) => {
 
 // Middleware for Owner specific routes
 exports.requireOwner = (req, res, next) => {
-    if (!req.session.userId || req.session.userRole !== 'Owner') {
+    if (!req.session || !req.session.userId || req.session.userRole !== 'Owner') {
         return res.status(403).send('Forbidden: สิทธิ์การเข้าถึงสำหรับ Owner เท่านั้น');
     }
     next();

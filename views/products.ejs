@@ -430,7 +430,9 @@ extraJs: `
                             const errorData = await res.json();
                             throw new Error(errorData.message || 'เกิดข้อผิดพลาดจากเซิร์ฟเวอร์');
                         } else {
-                            throw new Error('เซิร์ฟเวอร์ไม่ตอบสนอง หรือคุณไม่ได้เข้าสู่ระบบ (รบกวนรีเฟรชหน้าเว็บ)');
+                            const text = await res.text();
+                            const preview = text ? text.substring(0, 100) : 'No content';
+                            throw new Error('เซิร์ฟเวอร์ตอบกลับผิดปกติ (Status: ' + res.status + ' ' + res.statusText + '). รายละเอียด: ' + preview);
                         }
                     }
                     
