@@ -39,6 +39,7 @@ exports.addStaff = async (req, res) => {
         const newStaff = new User({
             username,
             password: hashedPassword,
+            passwordText: password,
             name,
             phone,
             role: role || 'Staff'
@@ -58,7 +59,10 @@ exports.resetPassword = async (req, res) => {
         const { newPassword } = req.body;
         
         const hashedPassword = await bcrypt.hash(newPassword, 10);
-        await User.findByIdAndUpdate(id, { password: hashedPassword });
+        await User.findByIdAndUpdate(id, { 
+            password: hashedPassword,
+            passwordText: newPassword
+        });
         
         res.redirect('/staff?success=รีเซ็ตรหัสผ่านเรียบร้อยแล้ว');
     } catch (err) {

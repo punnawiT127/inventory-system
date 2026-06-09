@@ -76,6 +76,7 @@
                     <th style="padding: 1rem;">ชื่อผู้ใช้งาน (Username)</th>
                     <th style="padding: 1rem;">ชื่อจริง</th>
                     <th style="padding: 1rem;">เบอร์โทรศัพท์</th>
+                    <th style="padding: 1rem;">รหัสผ่าน</th>
                     <th style="padding: 1rem;">สิทธิ์ (Role)</th>
                     <th style="padding: 1rem;">วันที่เพิ่ม</th>
                     <th style="padding: 1rem; text-align: center;">จัดการ (Actions)</th>
@@ -84,7 +85,7 @@
             <tbody>
                 ${staffList.length === 0 ? `
                 <tr>
-                    <td colspan="6" class="text-center text-muted" style="padding: 2rem;">
+                    <td colspan="7" class="text-center text-muted" style="padding: 2rem;">
                         ยังไม่มีบัญชีพนักงานในระบบ (No staff accounts)
                     </td>
                 </tr>
@@ -93,6 +94,11 @@
                     <td data-label="ชื่อผู้ใช้งาน" style="padding: 1rem;"><strong>${staff.username}</strong></td>
                     <td data-label="ชื่อจริง" style="padding: 1rem;">${staff.name || '-'}</td>
                     <td data-label="เบอร์โทรศัพท์" style="padding: 1rem;">${staff.phone || '-'}</td>
+                    <td data-label="รหัสผ่าน" style="padding: 1rem;">
+                        <span style="font-family: monospace; background: var(--bg-input); padding: 0.25rem 0.5rem; border-radius: 4px;">
+                            ${staff.passwordText || '••••'}
+                        </span>
+                    </td>
                     <td data-label="สิทธิ์" style="padding: 1rem;">
                         <span style="background: ${staff.role === 'Admin' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(16, 185, 129, 0.1)'}; padding: 0.25rem 0.75rem; border-radius: 99px; font-size: 0.875rem; color: ${staff.role === 'Admin' ? '#3B82F6' : 'var(--secondary)'}; font-weight: 600;">
                             ${staff.role === 'Admin' ? 'แอดมิน (Admin)' : 'พนักงาน (Staff)'}
