@@ -75,6 +75,14 @@
                 </svg>
                 สแกนกล้อง
             </button>
+            ${(user.userRole === 'Owner' || user.userRole === 'Admin') ? `
+            <button class="btn btn-primary" onclick="openAddCategoryModal()" style="display: flex; align-items: center; gap: 0.5rem; background-color: var(--secondary);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                เพิ่มหมวดหมู่ใหม่
+            </button>
+            ` : ''}
             <button class="btn btn-primary" onclick="openAddModal()" style="display: flex; align-items: center; gap: 0.5rem;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -198,19 +206,15 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">หมวดหมู่ (Category)</label>
-                    <select name="category" class="form-control" required>
+                    <select name="category" id="addCategorySelect" class="form-control" onchange="toggleCustomCategory(this, 'addCustomCategoryGroup')" required>
                         <option value="" disabled selected>เลือกหมวดหมู่</option>
-                        <option value="อาหารและของกิน 🍜">อาหารและของกิน 🍜</option>
-                        <option value="เครื่องดื่ม 🥤">เครื่องดื่ม 🥤</option>
-                        <option value="ของใช้ในบ้าน 🏠">ของใช้ในบ้าน 🏠</option>
-                        <option value="ของใช้ส่วนตัว 🧴">ของใช้ส่วนตัว 🧴</option>
-                        <option value="เครื่องปรุงอาหาร 🍳">เครื่องปรุงอาหาร 🍳</option>
-                        <option value="ของสด 🥬">ของสด 🥬</option>
-                        <option value="ของแช่แข็ง / แช่เย็น ❄️">ของแช่แข็ง / แช่เย็น ❄️</option>
-                        <option value="อาหารสัตว์ 🐾">อาหารสัตว์ 🐾</option>
-                        <option value="สินค้าการเกษตร 🌾">สินค้าการเกษตร 🌾</option>
-                        <option value="ของใช้เบ็ดเตล็ด 🔧">ของใช้เบ็ดเตล็ด 🔧</option>
+                        ${categories.map(cat => `<option value="${cat.name}">${cat.name}</option>`).join('')}
+                        <option value="custom_other">อื่นๆ...</option>
                     </select>
+                </div>
+                <div class="form-group" id="addCustomCategoryGroup" style="display: none;">
+                    <label class="form-label">ระบุหมวดหมู่ใหม่ (Specify Custom Category)</label>
+                    <input type="text" name="customCategory" id="addCustomCategory" class="form-control" placeholder="เช่น เครื่องใช้ไฟฟ้า">
                 </div>
                 <div style="display: flex; gap: 1rem;">
                     <div class="form-group" style="flex: 1;">
@@ -275,18 +279,14 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">หมวดหมู่ (Category)</label>
-                    <select name="category" id="editCategory" class="form-control" required>
-                        <option value="อาหารและของกิน 🍜">อาหารและของกิน 🍜</option>
-                        <option value="เครื่องดื่ม 🥤">เครื่องดื่ม 🥤</option>
-                        <option value="ของใช้ในบ้าน 🏠">ของใช้ในบ้าน 🏠</option>
-                        <option value="ของใช้ส่วนตัว 🧴">ของใช้ส่วนตัว 🧴</option>
-                        <option value="เครื่องปรุงอาหาร 🍳">เครื่องปรุงอาหาร 🍳</option>
-                        <option value="ของสด 🥬">ของสด 🥬</option>
-                        <option value="ของแช่แข็ง / แช่เย็น ❄️">ของแช่แข็ง / แช่เย็น ❄️</option>
-                        <option value="อาหารสัตว์ 🐾">อาหารสัตว์ 🐾</option>
-                        <option value="สินค้าการเกษตร 🌾">สินค้าการเกษตร 🌾</option>
-                        <option value="ของใช้เบ็ดเตล็ด 🔧">ของใช้เบ็ดเตล็ด 🔧</option>
+                    <select name="category" id="editCategory" class="form-control" onchange="toggleCustomCategory(this, 'editCustomCategoryGroup')" required>
+                        ${categories.map(cat => `<option value="${cat.name}">${cat.name}</option>`).join('')}
+                        <option value="custom_other">อื่นๆ...</option>
                     </select>
+                </div>
+                <div class="form-group" id="editCustomCategoryGroup" style="display: none;">
+                    <label class="form-label">ระบุหมวดหมู่ใหม่ (Specify Custom Category)</label>
+                    <input type="text" name="customCategory" id="editCustomCategory" class="form-control" placeholder="เช่น เครื่องใช้ไฟฟ้า">
                 </div>
                 <div style="display: flex; gap: 1rem;">
                     <div class="form-group" style="flex: 1;">
@@ -325,9 +325,33 @@
                         </div>
                     </div>
                 </div>
+                <div class="form-group" id="reasonGroup" style="display: none; margin-top: 1rem;">
+                    <label class="form-label">หมายเหตุ/เหตุผลในการปรับสต็อก (Reason for Request)</label>
+                    <textarea id="editReason" class="form-control" placeholder="ระบุเหตุผล เช่น แบ่งมาม่าลังมาขายเป็นซอง"></textarea>
+                </div>
                 <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1rem;">
                     <button type="button" class="btn" style="background-color: var(--bg-input);" onclick="closeModal('editModal')">ยกเลิก</button>
                     <button type="submit" class="btn btn-primary">บันทึกการเปลี่ยนแปลง</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Category Modal -->
+    <div class="modal-overlay" id="addCategoryModal">
+        <div class="modal" style="max-width: 400px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3>เพิ่มหมวดหมู่สินค้าใหม่</h3>
+                <button onclick="closeModal('addCategoryModal')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</button>
+            </div>
+            <form action="/products/category/add" method="POST">
+                <div class="form-group">
+                    <label class="form-label">ชื่อหมวดหมู่ (Category Name)</label>
+                    <input type="text" name="name" class="form-control" required placeholder="เช่น เครื่องใช้ไฟฟ้า">
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem;">
+                    <button type="button" class="btn" style="background-color: var(--bg-input);" onclick="closeModal('addCategoryModal')">ยกเลิก</button>
+                    <button type="submit" class="btn btn-primary">บันทึกหมวดหมู่</button>
                 </div>
             </form>
         </div>
@@ -380,36 +404,77 @@ extraJs: `
         
         document.getElementById('editCode').value = product.code;
         document.getElementById('editName').value = product.name;
-        document.getElementById('editCategory').value = product.category;
+        
+        // Handle category dropdown prefill for custom category
+        const categorySelect = document.getElementById('editCategory');
+        const hasCategory = Array.from(categorySelect.options).some(opt => opt.value === product.category);
+        if (hasCategory) {
+            categorySelect.value = product.category;
+            document.getElementById('editCustomCategoryGroup').style.display = 'none';
+            document.getElementById('editCustomCategory').required = false;
+            document.getElementById('editCustomCategory').value = '';
+        } else {
+            categorySelect.value = 'custom_other';
+            document.getElementById('editCustomCategoryGroup').style.display = 'block';
+            document.getElementById('editCustomCategory').required = true;
+            document.getElementById('editCustomCategory').value = product.category || '';
+        }
+
         document.getElementById('editCostPrice').value = product.costPrice || 0;
         document.getElementById('editPrice').value = product.price;
         document.getElementById('editStock').value = product.stock;
         document.getElementById('editWeight').value = product.weight || 0;
         document.getElementById('editUnit').value = product.unit || 'ชิ้น';
         
-        if (userRole !== 'Owner') {
+        // Reset reason field
+        const reasonInput = document.getElementById('editReason');
+        if (reasonInput) reasonInput.value = '';
+
+        if (userRole !== 'Owner' && userRole !== 'Admin') {
             document.getElementById('editCode').readOnly = true;
             document.getElementById('editName').readOnly = true;
             document.getElementById('editCategory').disabled = true;
+            document.getElementById('editCustomCategory').readOnly = true;
             document.getElementById('editCostPrice').readOnly = true;
             document.getElementById('editPrice').readOnly = true;
             document.getElementById('editWeight').readOnly = true;
             document.getElementById('editUnit').disabled = true;
+            document.getElementById('reasonGroup').style.display = 'block';
+            if (reasonInput) reasonInput.required = true;
             const submitBtn = document.querySelector('#editForm button[type="submit"]');
             if (submitBtn) submitBtn.textContent = 'ส่งคำร้องขอแก้ไขสต็อก';
+        } else {
+            document.getElementById('editCode').readOnly = false;
+            document.getElementById('editName').readOnly = false;
+            document.getElementById('editCategory').disabled = false;
+            document.getElementById('editCustomCategory').readOnly = false;
+            document.getElementById('editCostPrice').readOnly = false;
+            document.getElementById('editPrice').readOnly = false;
+            document.getElementById('editWeight').readOnly = false;
+            document.getElementById('editUnit').disabled = false;
+            document.getElementById('reasonGroup').style.display = 'none';
+            if (reasonInput) reasonInput.required = false;
+            const submitBtn = document.querySelector('#editForm button[type="submit"]');
+            if (submitBtn) submitBtn.textContent = 'บันทึกการเปลี่ยนแปลง';
         }
         
         document.getElementById('editModal').classList.add('modal-active');
     }
 
     document.getElementById('editForm').addEventListener('submit', async function(e) {
-        if (userRole !== 'Owner') {
+        if (userRole !== 'Owner' && userRole !== 'Admin') {
             const originalStock = parseInt(this.getAttribute('data-original-stock'), 10);
             const newStock = parseInt(document.getElementById('editStock').value, 10);
             const productId = this.getAttribute('data-product-id');
             
             if (originalStock !== newStock) {
                 e.preventDefault(); // Stop normal submission
+                
+                const reason = document.getElementById('editReason').value.trim();
+                if (!reason) {
+                    Swal.fire('ข้อผิดพลาด', 'กรุณาระบุเหตุผลในการปรับสต็อก', 'warning');
+                    return;
+                }
                 
                 // Show loading
                 Swal.fire({
@@ -422,7 +487,7 @@ extraJs: `
                     const res = await fetch('/api/requests/submit', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ productId, oldStock: originalStock, newStock })
+                        body: JSON.stringify({ productId, oldStock: originalStock, newStock, reason })
                     });
                     
                     if (res.redirected && res.url.includes('/login')) {
@@ -455,6 +520,23 @@ extraJs: `
             }
         }
     });
+
+    function openAddCategoryModal() {
+        document.getElementById('addCategoryModal').classList.add('modal-active');
+    }
+
+    function toggleCustomCategory(selectEl, groupId) {
+        const group = document.getElementById(groupId);
+        const customInput = group.querySelector('input');
+        if (selectEl.value === 'custom_other') {
+            group.style.display = 'block';
+            customInput.required = true;
+            customInput.focus();
+        } else {
+            group.style.display = 'none';
+            customInput.required = false;
+        }
+    }
 
     // Event delegation for edit buttons
     document.addEventListener('click', (e) => {

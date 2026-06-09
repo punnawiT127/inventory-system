@@ -6,8 +6,8 @@ exports.getRequests = async (req, res) => {
     try {
         const requests = await StockRequest.find()
             .populate('product', 'name code stock unit')
-            .populate('requestedBy', 'username')
-            .populate('resolvedBy', 'username')
+            .populate('requestedBy', 'username name')
+            .populate('resolvedBy', 'username name')
             .sort({ requestDate: -1 });
 
         res.render('requests', {
@@ -31,7 +31,7 @@ exports.getRequests = async (req, res) => {
 
 exports.submitRequest = async (req, res) => {
     try {
-        const { productId, oldStock, newStock } = req.body;
+        const { productId, oldStock, newStock, reason } = req.body;
         
         // Find product to ensure it exists
         const product = await Product.findById(productId);
@@ -39,18 +39,28 @@ exports.submitRequest = async (req, res) => {
             return res.json({ success: false, message: 'ไม่พบสินค้า' });
         }
         
+        // Update product stock immediately so that storefront/POS sees the correct amount
+        const stockDiff = newStock - oldStock;
+        product.stock = newStock;
+        if (product.weight > 0 && ['กิโลกรัม', 'กรัม', 'ขีด'].includes(product.unit)) {
+            product.weight = Math.max(0, product.weight + stockDiff);
+            product.weight = Math.round(product.weight * 100) / 100;
+        }
+        await product.save();
+        
         const request = new StockRequest({
             product: productId,
             requestedBy: req.session.userId,
             oldStock,
             newStock,
+            reason: reason || '',
             status: 'Pending'
         });
         
         await request.save();
         
         // Send LINE notification for new request
-        lineService.notifyNewRequest(product, req.session.username, oldStock, newStock);
+        lineService.notifyNewRequest(product, req.session.username, oldStock, newStock, reason);
         
         res.json({ success: true, message: 'ส่งคำร้องขออนุมัติเรียบร้อยแล้ว' });
     } catch (err) {
@@ -75,13 +85,19 @@ exports.resolveRequest = async (req, res) => {
         
         if (action === 'approve') {
             request.status = 'Approved';
-            // Update product stock
-            if (request.product) {
-                request.product.stock = request.newStock;
-                await request.product.save();
-            }
+            // Stock is already updated in DB upon submission, so nothing more is needed for product stock
         } else if (action === 'reject') {
             request.status = 'Rejected';
+            // Revert the stock change
+            if (request.product) {
+                const stockDiff = request.oldStock - request.newStock; // difference to add back
+                request.product.stock = Math.max(0, request.product.stock + stockDiff);
+                if (request.product.weight > 0 && ['กิโลกรัม', 'กรัม', 'ขีด'].includes(request.product.unit)) {
+                    request.product.weight = Math.max(0, request.product.weight + stockDiff);
+                    request.product.weight = Math.round(request.product.weight * 100) / 100;
+                }
+                await request.product.save();
+            }
         } else {
             return res.redirect('/requests?error=การดำเนินการไม่ถูกต้อง');
         }

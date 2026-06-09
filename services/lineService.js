@@ -47,8 +47,12 @@ exports.notifyDuplicateBarcode = async (barcode, attemptedName, existingName) =>
     await sendLineNotification(message);
 };
 
-exports.notifyNewRequest = async (product, employeeName, oldStock, newStock) => {
-    const message = `📝 มีคำร้องขอแก้ไขสต็อก\nสินค้า: ${product.name} (${product.code})\nผู้ขอ: ${employeeName}\nสต็อกเดิม: ${oldStock} ${product.unit || 'ชิ้น'}\nสต็อกใหม่: ${newStock} ${product.unit || 'ชิ้น'}\nกรุณาเข้าสู่ระบบเพื่ออนุมัติ`;
+exports.notifyNewRequest = async (product, employeeName, oldStock, newStock, reason) => {
+    let message = `📝 มีคำร้องขอแก้ไขสต็อก\nสินค้า: ${product.name} (${product.code})\nผู้ขอ: ${employeeName}\nสต็อกเดิม: ${oldStock} ${product.unit || 'ชิ้น'}\nสต็อกใหม่: ${newStock} ${product.unit || 'ชิ้น'}`;
+    if (reason) {
+        message += `\nหมายเหตุ: ${reason}`;
+    }
+    message += `\nกรุณาเข้าสู่ระบบเพื่ออนุมัติ`;
     await sendLineNotification(message);
 };
 

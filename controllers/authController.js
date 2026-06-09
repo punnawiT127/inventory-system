@@ -65,3 +65,11 @@ exports.requireOwner = (req, res, next) => {
     }
     next();
 };
+
+// Middleware for Owner or Admin specific routes
+exports.requireAdminOrOwner = (req, res, next) => {
+    if (!req.session || !req.session.userId || (req.session.userRole !== 'Owner' && req.session.userRole !== 'Admin')) {
+        return res.status(403).send('Forbidden: สิทธิ์การเข้าถึงสำหรับ Owner หรือ Admin เท่านั้น');
+    }
+    next();
+};

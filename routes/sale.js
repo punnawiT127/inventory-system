@@ -9,8 +9,8 @@ router.get('/pos', saleController.renderPOS);
 router.post('/api/sales', express.json(), saleController.processSale);
 router.get('/receipt/:id', saleController.renderReceipt);
 
-// Only Owners can view the full history
-const { requireOwner } = require('../controllers/authController');
-router.get('/history', requireOwner, saleController.renderHistory);
+// Owners and Admins can view the full history
+const { requireAdminOrOwner } = require('../controllers/authController');
+router.get('/history', requireAdminOrOwner, saleController.renderHistory);
 
 module.exports = router;

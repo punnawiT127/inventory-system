@@ -8,6 +8,7 @@ router.use('/staff', requireOwner);
 
 router.get('/staff', staffController.getStaff);
 router.post('/staff/add', staffController.addStaff);
+router.post('/staff/update/:id', staffController.updateStaff);
 router.post('/staff/reset-password/:id', staffController.resetPassword);
 router.post('/staff/delete/:id', staffController.deleteStaff);
 

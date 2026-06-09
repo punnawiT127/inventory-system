@@ -29,6 +29,10 @@ const stockRequestSchema = new mongoose.Schema({
         enum: ['Pending', 'Approved', 'Rejected'],
         default: 'Pending'
     },
+    reason: {
+        type: String,
+        trim: true
+    },
     requestDate: {
         type: Date,
         default: Date.now

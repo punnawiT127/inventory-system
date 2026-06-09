@@ -54,17 +54,22 @@
 
             <div class="nav-menu" id="navMenu">
                 <div class="nav-links">
-                    <% if (user.userRole==='Owner' ) { %>
+                    <% if (user.userRole === 'Owner' || user.userRole === 'Admin') { %>
                         <a href="/dashboard" class="nav-link">หน้าหลัก</a>
+                    <% } %>
+                    <% if (user.userRole === 'Owner') { %>
                         <a href="/staff" class="nav-link">พนักงาน</a>
+                    <% } %>
+                    <% if (user.userRole === 'Owner' || user.userRole === 'Admin') { %>
                         <a href="/requests" class="nav-link" style="position: relative; display: inline-block;">
                             คำร้องขอ
                             <span id="requests-badge" style="display: none; position: absolute; top: -5px; right: -15px; background-color: #EF4444; color: white; border-radius: 50%; font-size: 0.7rem; font-weight: bold; min-width: 18px; height: 18px; align-items: center; justify-content: center; padding: 0 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></span>
                         </a>
                     <% } %>
                     <a href="/products" class="nav-link">สินค้าคลัง</a>
+                    <a href="/restock" class="nav-link">เพิ่มของลงสต็อก</a>
                     <a href="/pos" class="nav-link">ขายสินค้า (POS)</a>
-                    <% if (user.userRole==='Owner' ) { %>
+                    <% if (user.userRole === 'Owner' || user.userRole === 'Admin') { %>
                         <a href="/history" class="nav-link">ประวัติการขาย</a>
                     <% } %>
                 </div>

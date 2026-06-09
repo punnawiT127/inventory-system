@@ -1,0 +1,416 @@
+<%- include('layout', { title: 'ระบบเพิ่มของลงสต็อก (Restock)' , user: user, extraCss: ` 
+    .pos-container { display: flex; gap: 2rem; } 
+    .pos-products { flex: 2; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; align-content: start; } 
+    .pos-cart { 
+        flex: 1; 
+        background: var(--bg-card); 
+        border-radius: var(--radius-lg);
+        padding: 1.5rem; 
+        box-shadow: var(--shadow-sm); 
+        position: sticky; 
+        top: 100px; 
+        max-height: calc(100vh - 120px);
+        display: flex; 
+        flex-direction: column; 
+    } 
+    .product-card { 
+        background: var(--bg-card); 
+        border-radius: var(--radius-md); 
+        padding: 1rem; 
+        cursor: pointer; 
+        border: 2px solid transparent; 
+        transition: all 0.2s; 
+        box-shadow: var(--shadow-sm); 
+    } 
+    .product-card:hover { 
+        border-color: var(--primary); 
+        transform: translateY(-2px); 
+        box-shadow: var(--shadow-md); 
+    } 
+    .cart-items { 
+        flex-grow: 1; 
+        overflow-y: auto; 
+        margin-bottom: 1rem; 
+        border-bottom: 1px solid var(--border); 
+        padding-bottom: 1rem; 
+    } 
+    .cart-item { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        margin-bottom: 0.5rem; 
+        padding: 0.5rem; 
+        background: var(--bg-input); 
+        border-radius: var(--radius-md); 
+    }
+    .cart-item-info { flex: 1; } 
+    .cart-item-qty { display: flex; align-items: center; gap: 0.5rem; } 
+    .qty-btn {
+        background: var(--bg-card); 
+        border: 1px solid var(--border); 
+        width: 28px; 
+        height: 28px; 
+        border-radius: 4px; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        cursor: pointer; 
+    } 
+    .cart-total { 
+        font-size: 1.25rem; 
+        font-weight: 700; 
+        display: flex; 
+        justify-content: space-between; 
+        margin-bottom: 1rem; 
+    } 
+    @media (max-width: 768px) { 
+        .pos-container { flex-direction: column; } 
+        .pos-cart { 
+            order: -1; /* Move cart to the top on mobile */
+            position: static; 
+            max-height: none; 
+            margin-bottom: 1rem;
+        } 
+    } 
+`, 
+body: ` 
+<div id="products-data-store" style="display: none;" data-products='${JSON.stringify(products).replace(/'/g, "&#39;")}'></div>
+
+<div class="pos-container">
+    <div class="pos-products" id="pos-products-container" style="display: block;">
+        <div style="margin-bottom: 1.5rem;">
+            <input type="text" id="pos-search" class="form-control" placeholder="🔍 ค้นหาสินค้าที่ต้องการเพิ่มสต็อก หรือ สแกนบาร์โค้ดลงในช่องนี้..." style="padding: 1rem; font-size: 1.1rem; border-radius: var(--radius-lg); border: 2px solid var(--border); width: 100%; margin-bottom: 1rem;" onkeyup="searchPOSProducts()" autofocus>
+            <button class="btn btn-primary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 1rem; font-size: 1.1rem; border-radius: var(--radius-lg); background-color: var(--secondary);" onclick="openScanner()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 7V4h3"></path><path d="M20 7V4h-3"></path><path d="M4 17v3h3"></path><path d="M20 17v3h-3"></path><rect x="7" y="10" width="10" height="4" rx="1"></rect>
+                </svg>
+                สแกนบาร์โค้ดสินค้า (จากกล้อง)
+            </button>
+        </div>
+
+        ${products.length === 0 ? `
+        <div style="text-align: center; padding: 3rem; background: var(--bg-card); border-radius: var(--radius-lg);">
+            <p class="text-muted">ไม่พบสินค้าในระบบ</p>
+        </div>
+        ` : Object.keys(groupedProducts).sort().map(category => `
+        <div class="category-section" style="margin-bottom: 2rem;">
+            <h3 style="margin-bottom: 1rem; color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                ${category}
+            </h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
+                ${groupedProducts[category].map(product => `
+                <div class="product-card js-product-item" data-id="${product._id}">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span style="font-size: 0.75rem; color: var(--text-muted);">${product.code}</span>
+                        <span style="font-size: 0.75rem; background: var(--bg-app); padding: 0.1rem 0.5rem; border-radius: 99px; font-weight: 600;">
+                            สต็อก: ${product.stock} ${product.unit || 'ชิ้น'}
+                        </span>
+                    </div>
+                    <h4 style="margin-bottom: 0.5rem;">${product.name}</h4>
+                    <div style="font-size: 0.825rem; color: var(--text-muted);">ราคา: ฿${product.price.toLocaleString('th-TH')}</div>
+                </div>
+                `).join('')}
+            </div>
+        </div>
+        `).join('')}
+    </div>
+
+    <div class="pos-cart">
+        <h3 style="margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);">รายการเพิ่มสต็อก</h3>
+        <div class="cart-items" id="cart-items">
+            <div id="empty-cart-msg" class="text-muted text-center" style="margin-top: 2rem;">รอกดเลือกสินค้า...</div>
+        </div>
+
+        <div class="cart-total">
+            <span>รวมทั้งหมด</span>
+            <span id="cart-total-qty">0 รายการ</span>
+        </div>
+
+        <!-- Remarks/Reason for Request -->
+        <div class="form-group" style="margin-bottom: 1rem;">
+            <label class="form-label" style="font-weight: 600; font-size: 0.875rem;">หมายเหตุ/เหตุผลการเพิ่มสต็อก</label>
+            <textarea id="restock-reason" class="form-control" rows="2" style="font-size: 0.875rem; border-radius: 4px;" placeholder="${(user.userRole === 'Owner' || user.userRole === 'Admin') ? 'เช่น รับสินค้าจากโกดังใหญ่ (ระบุหรือไม่ระบุก็ได้)' : 'กรุณาระบุเหตุผลการเพิ่มสต็อก (เช่น เติมสินค้าหน้าร้าน)'}"></textarea>
+        </div>
+
+        <button class="btn btn-primary btn-block" style="padding: 1rem; font-weight: bold; background-color: var(--primary);" id="checkout-btn" onclick="processRestock()" disabled>
+            ${(user.userRole === 'Owner' || user.userRole === 'Admin') ? 'บันทึกการเพิ่มสต็อก' : 'ส่งคำร้องขออนุมัติเพิ่มสต็อก'}
+        </button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="scannerModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 50;">
+    <div class="modal" style="background: var(--bg-card); width: 100%; max-width: 600px; border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow-lg);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h3>สแกนบาร์โค้ด (Restock)</h3>
+            <button onclick="closeScanner()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</button>
+        </div>
+        <div id="reader" style="width: 100%; min-height: 300px;"></div>
+        <p class="text-center text-muted" style="margin-top: 1rem; font-size: 0.875rem;">
+            นำกล้องส่องไปที่บาร์โค้ดเพื่อเลือกสินค้าและระบุจำนวนที่เติม
+        </p>
+    </div>
+</div>
+`,
+extraJs: `
+    let productsData = [];
+    try {
+        const dataElement = document.getElementById('products-data-store');
+        if (dataElement) {
+            productsData = JSON.parse(dataElement.getAttribute('data-products'));
+        }
+    } catch (e) {
+        console.error('Error parsing products data:', e);
+    }
+
+    let cart = {};
+    const userRole = '${user.userRole || user.role}';
+
+    function addToCart(productId) {
+        const product = productsData.find(p => p._id === productId);
+        if (!product) {
+            console.error('Product not found in local data:', productId);
+            return;
+        }
+
+        if (!cart[productId]) {
+            cart[productId] = { 
+                id: product._id, 
+                name: product.name, 
+                currentStock: product.stock,
+                quantity: 1, 
+                unit: product.unit || 'ชิ้น' 
+            };
+        } else {
+            cart[productId].quantity++;
+        }
+        renderCart();
+    }
+
+    // Set up event delegation for product cards
+    document.addEventListener('click', (e) => {
+        const productCard = e.target.closest('.js-product-item');
+        if (productCard) {
+            const productId = productCard.getAttribute('data-id');
+            addToCart(productId);
+        }
+    });
+
+    function updateQty(id, delta) {
+        if (cart[id]) {
+            const newQty = cart[id].quantity + delta;
+            if (newQty <= 0) {
+                delete cart[id];
+            } else {
+                cart[id].quantity = newQty;
+            }
+        }
+        renderCart();
+    }
+
+    function renderCart() {
+        const cartEl = document.getElementById('cart-items');
+        const totalEl = document.getElementById('cart-total-qty');
+        const checkoutBtn = document.getElementById('checkout-btn');
+
+        cartEl.innerHTML = '';
+        let totalItems = 0;
+        const cartItems = Object.values(cart);
+        
+        if (cartItems.length === 0) {
+            cartEl.innerHTML = '<div id="empty-cart-msg" class="text-muted text-center" style="margin-top: 2rem;">รอกดเลือกสินค้า...</div>';
+            checkoutBtn.disabled = true;
+            totalEl.textContent = '0 รายการ';
+            return;
+        }
+
+        cartItems.forEach(item => {
+            totalItems += item.quantity;
+
+            const itemEl = document.createElement('div');
+            itemEl.className = 'cart-item';
+            
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'cart-item-info';
+            infoDiv.innerHTML = '<div style="font-weight: 500; font-size: 0.875rem;">' + item.name + '</div>' +
+                                '<div style="font-size: 0.75rem; color: var(--text-muted);">คงเหลือเดิม: ' + item.currentStock + ' ' + item.unit + '</div>';
+            
+            const qtyDiv = document.createElement('div');
+            qtyDiv.className = 'cart-item-qty';
+            
+            const minusBtn = document.createElement('button');
+            minusBtn.className = 'qty-btn';
+            minusBtn.textContent = '-';
+            minusBtn.onclick = () => updateQty(item.id, -1);
+            
+            const qtyInput = document.createElement('input');
+            qtyInput.type = 'number';
+            qtyInput.value = item.quantity;
+            qtyInput.min = '1';
+            qtyInput.style.cssText = 'font-weight: 600; width: 60px; text-align: center; border: 1px solid var(--border); border-radius: 4px; padding: 4px; font-size: 1rem;';
+            qtyInput.onchange = (e) => {
+                const newVal = parseInt(e.target.value, 10);
+                if (isNaN(newVal) || newVal <= 0) {
+                    updateQty(item.id, -item.quantity);
+                } else {
+                    updateQty(item.id, newVal - item.quantity);
+                }
+            };
+            
+            const plusBtn = document.createElement('button');
+            plusBtn.className = 'qty-btn';
+            plusBtn.textContent = '+';
+            plusBtn.onclick = () => updateQty(item.id, 1);
+            
+            qtyDiv.appendChild(minusBtn);
+            qtyDiv.appendChild(qtyInput);
+            qtyDiv.appendChild(plusBtn);
+            
+            itemEl.appendChild(infoDiv);
+            itemEl.appendChild(qtyDiv);
+            cartEl.appendChild(itemEl);
+        });
+
+        checkoutBtn.disabled = false;
+        totalEl.textContent = totalItems + ' ชิ้น (' + cartItems.length + ' รายการ)';
+    }
+
+    async function processRestock() {
+        const items = Object.values(cart).map(i => ({ productId: i.id, quantity: i.quantity }));
+        if (items.length === 0) return;
+
+        const reason = document.getElementById('restock-reason').value.trim();
+        if (userRole !== 'Owner' && userRole !== 'Admin' && !reason) {
+            Swal.fire({
+                title: 'กรุณาระบุหมายเหตุ',
+                text: 'พนักงานต้องกรอกเหตุผล/หมายเหตุในการเพิ่มสต็อก',
+                icon: 'warning',
+                confirmButtonColor: 'var(--primary)'
+            });
+            return;
+        }
+
+        const btn = document.getElementById('checkout-btn');
+        btn.disabled = true;
+        btn.textContent = 'กำลังบันทึก...';
+
+        try {
+            const response = await fetch('/api/products/restock', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ items, reason })
+            });
+
+            const data = await response.json();
+            
+            if (data.success) {
+                Swal.fire({
+                    title: 'สำเร็จ!',
+                    text: data.message,
+                    icon: 'success',
+                    confirmButtonColor: 'var(--primary)'
+                }).then(() => {
+                    window.location.reload();
+                });
+            } else {
+                Swal.fire({
+                    title: 'ข้อผิดพลาด',
+                    text: data.message,
+                    icon: 'error',
+                    confirmButtonColor: 'var(--danger)'
+                });
+                btn.disabled = false;
+                btn.textContent = userRole === 'Owner' || userRole === 'Admin' ? 'บันทึกการเพิ่มสต็อก' : 'ส่งคำร้องขออนุมัติเพิ่มสต็อก';
+            }
+        } catch (err) {
+            Swal.fire({
+                title: 'ข้อผิดพลาดเครือข่าย',
+                text: 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์',
+                icon: 'error',
+                confirmButtonColor: 'var(--danger)'
+            });
+            btn.disabled = false;
+            btn.textContent = userRole === 'Owner' || userRole === 'Admin' ? 'บันทึกการเพิ่มสต็อก' : 'ส่งคำร้องขออนุมัติเพิ่มสต็อก';
+        }
+    }
+
+    let html5QrcodeScanner = null;
+    function openScanner() {
+        document.getElementById('scannerModal').style.display = 'flex';
+        if (!html5QrcodeScanner) {
+            html5QrcodeScanner = new Html5QrcodeScanner(
+                "reader",
+                { fps: 10, qrbox: {width: 250, height: 150} },
+                false
+            );
+            html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+        }
+    }
+
+    function closeScanner() {
+        document.getElementById('scannerModal').style.display = 'none';
+        if (html5QrcodeScanner) {
+            html5QrcodeScanner.clear().then(() => { html5QrcodeScanner = null; });
+        }
+    }
+
+    let isScanning = false;
+    async function onScanSuccess(decodedText) {
+        if (isScanning) return;
+        isScanning = true;
+        
+        document.getElementById('scannerModal').style.display = 'none';
+        Swal.fire({
+            title: 'ตรวจสอบบาร์โค้ด...',
+            text: 'รหัส: ' + decodedText,
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        try {
+            const response = await fetch('/api/products/' + decodedText);
+            const data = await response.json();
+            Swal.close();
+            
+            if (data.success && data.product) {
+                addToCart(data.product._id);
+                Swal.fire({ icon: 'success', title: 'เลือกสินค้าสำเร็จ', text: data.product.name, timer: 1000, showConfirmButton: false })
+                .then(() => { document.getElementById('scannerModal').style.display = 'flex'; isScanning = false; });
+            } else {
+                Swal.fire({ icon: 'warning', title: 'ไม่พบสินค้า', text: 'ไม่พบรหัสสินค้าบาร์โค้ดนี้ในระบบ', timer: 2000, showConfirmButton: false })
+                .then(() => { document.getElementById('scannerModal').style.display = 'flex'; isScanning = false; });
+            }
+        } catch (err) {
+            Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อระบบได้', 'error').then(() => { document.getElementById('scannerModal').style.display = 'flex'; isScanning = false; });
+        }
+    }
+
+    function onScanFailure(error) {}
+
+    function searchPOSProducts() {
+        const input = document.getElementById('pos-search').value.toLowerCase();
+        const productCards = document.querySelectorAll('.js-product-item');
+        
+        productCards.forEach(card => {
+            const name = card.querySelector('h4').textContent.toLowerCase();
+            const code = card.querySelector('span').textContent.toLowerCase();
+            if (name.includes(input) || code.includes(input)) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        
+        // Hide/show category headers
+        const categories = document.querySelectorAll('.category-section');
+        categories.forEach(category => {
+            const visibleCards = category.querySelectorAll('.js-product-item[style="display: block;"]');
+            if (visibleCards.length === 0 && input !== '') {
+                category.style.display = 'none';
+            } else {
+                category.style.display = 'block';
+            }
+        });
+    }
+` 
+}) %>

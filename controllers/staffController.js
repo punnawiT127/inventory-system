@@ -3,7 +3,8 @@ const bcrypt = require('bcrypt');
 
 exports.getStaff = async (req, res) => {
     try {
-        const staffList = await User.find({ role: 'Staff' }).sort({ createdAt: -1 });
+        // Find all users who are not Owners (Staff and Admin)
+        const staffList = await User.find({ role: { $ne: 'Owner' } }).sort({ createdAt: -1 });
         res.render('staff', {
             title: 'จัดการพนักงาน (Staff Management)',
             user: req.session,
@@ -25,7 +26,7 @@ exports.getStaff = async (req, res) => {
 
 exports.addStaff = async (req, res) => {
     try {
-        const { username, password } = req.body;
+        const { username, password, name, phone, role } = req.body;
         
         // Check if username already exists
         const existingUser = await User.findOne({ username });
@@ -38,7 +39,9 @@ exports.addStaff = async (req, res) => {
         const newStaff = new User({
             username,
             password: hashedPassword,
-            role: 'Staff'
+            name,
+            phone,
+            role: role || 'Staff'
         });
 
         await newStaff.save();
@@ -72,5 +75,27 @@ exports.deleteStaff = async (req, res) => {
     } catch (err) {
         console.error('Error deleting staff:', err);
         res.redirect('/staff?error=เกิดข้อผิดพลาดในการลบพนักงาน');
+    }
+};
+
+exports.updateStaff = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { username, name, phone, role } = req.body;
+        
+        if (username) {
+            const existing = await User.findOne({ username, _id: { $ne: id } });
+            if (existing) {
+                return res.redirect('/staff?error=ชื่อผู้ใช้งานนี้มีอยู่ในระบบแล้ว (Username already exists)');
+            }
+        }
+        
+        const updateData = { username, name, phone, role };
+        await User.findByIdAndUpdate(id, updateData, { runValidators: true });
+        
+        res.redirect('/staff?success=อัปเดตข้อมูลพนักงานเรียบร้อยแล้ว');
+    } catch (err) {
+        console.error('Error updating staff:', err);
+        res.redirect('/staff?error=เกิดข้อผิดพลาดในการอัปเดตข้อมูลพนักงาน');
     }
 };

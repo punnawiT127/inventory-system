@@ -65,6 +65,7 @@
                     <th style="padding: 1rem;">วันที่ / เวลา</th>
                     <th style="padding: 1rem;">พนักงานผู้ขอ</th>
                     <th style="padding: 1rem;">สินค้า</th>
+                    <th style="padding: 1rem;">หมายเหตุ</th>
                     <th style="padding: 1rem; text-align: center;">สต็อกเดิม</th>
                     <th style="padding: 1rem; text-align: center;">สต็อกใหม่</th>
                     <th style="padding: 1rem; text-align: center;">สถานะ</th>
@@ -74,17 +75,24 @@
             <tbody>
                 ${requests.length === 0 ? `
                 <tr>
-                    <td colspan="7" class="text-center text-muted empty-message" style="padding: 2rem;">
+                    <td colspan="8" class="text-center text-muted empty-message" style="padding: 2rem;">
                         ไม่มีคำร้องขอในขณะนี้
                     </td>
                 </tr>
                 ` : requests.map(req => `
                 <tr style="border-bottom: 1px solid var(--border);">
                     <td data-label="วันที่ / เวลา" style="padding: 1rem;">${new Date(req.requestDate).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' })}</td>
-                    <td data-label="พนักงานผู้ขอ" style="padding: 1rem;">${req.requestedBy ? req.requestedBy.username : '-'}</td>
-                    <td data-label="สินค้า" style="padding: 1rem; text-align: right;">
+                    <td data-label="พนักงานผู้ขอ" style="padding: 1rem;">${req.requestedBy ? (req.requestedBy.name ? `${req.requestedBy.name} (${req.requestedBy.username})` : req.requestedBy.username) : '-'}</td>
+                    <td data-label="สินค้า" style="padding: 1rem;">
                         <strong>${req.product ? req.product.code : '-'}</strong><br>
                         <span style="font-size: 0.875rem; color: var(--text-muted);">${req.product ? req.product.name : 'สินค้าถูกลบแล้ว'}</span>
+                    </td>
+                    <td data-label="หมายเหตุ" style="padding: 1rem;">
+                        ${req.reason ? `
+                        <div style="font-size: 0.825rem; padding: 0.25rem 0.5rem; background: var(--bg-input); border-radius: 4px; border-left: 3px solid var(--primary); text-align: left; word-break: break-all;">
+                            ${req.reason}
+                        </div>
+                        ` : '-'}
                     </td>
                     <td data-label="สต็อกเดิม" style="padding: 1rem; text-align: right; color: var(--warning); font-weight: bold;">
                         ${req.oldStock} ${req.product ? req.product.unit || 'ชิ้น' : ''}
@@ -96,7 +104,7 @@
                         ${req.status === 'Pending' ? `<span style="background: rgba(245, 158, 11, 0.2); color: var(--warning); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.875rem;">รออนุมัติ</span>` :
                           req.status === 'Approved' ? `<span style="background: rgba(16, 185, 129, 0.2); color: var(--secondary); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.875rem;">อนุมัติแล้ว</span>` :
                           `<span style="background: rgba(239, 68, 68, 0.2); color: var(--danger); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.875rem;">ปฏิเสธ</span>`}
-                        ${req.resolvedBy ? `<div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">โดย: ${req.resolvedBy.username}</div>` : ''}
+                        ${req.resolvedBy ? `<div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">โดย: ${req.resolvedBy.name ? `${req.resolvedBy.name} (${req.resolvedBy.username})` : req.resolvedBy.username}</div>` : ''}
                     </td>
                     <td data-label="" style="padding: 1rem; text-align: center; display: flex; justify-content: flex-end;">
                         ${req.status === 'Pending' && req.product ? `

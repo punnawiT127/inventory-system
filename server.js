@@ -71,9 +71,65 @@ app.get('/', (req, res) => {
 });
 
 // Port and DB Connection
+const cleanAndPopulateCategories = async () => {
+    try {
+        const Product = require('./models/Product');
+        const Category = require('./models/Category');
+        
+        // 1. Seed defaults if Category collection is empty
+        const catCount = await Category.countDocuments();
+        if (catCount === 0) {
+            const defaultCategories = [
+                'อาหารและของกิน',
+                'เครื่องดื่ม',
+                'ของใช้ในบ้าน',
+                'ของใช้ส่วนตัว',
+                'เครื่องปรุงอาหาร',
+                'ของสด',
+                'ของแช่แข็ง / แช่เย็น',
+                'อาหารสัตว์',
+                'สินค้าการเกษตร',
+                'ของใช้เบ็ดเตล็ด'
+            ];
+            for (const name of defaultCategories) {
+                await Category.create({ name });
+            }
+            console.log('[Migration] Seeded default categories.');
+        }
+
+        // 2. Strip emojis from existing products' categories and populate Category table
+        const products = await Product.find({});
+        let cleanCount = 0;
+        for (let product of products) {
+            if (product.category) {
+                let cleaned = product.category.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
+                if (cleaned !== product.category) {
+                    product.category = cleaned;
+                    await product.save();
+                    cleanCount++;
+                }
+
+                // Ensure category exists in Category collection
+                if (product.category) {
+                    const exists = await Category.findOne({ name: product.category });
+                    if (!exists) {
+                        await Category.create({ name: product.category });
+                    }
+                }
+            }
+        }
+        if (cleanCount > 0) {
+            console.log(`[Migration] Cleaned category emojis for ${cleanCount} products.`);
+        }
+    } catch (err) {
+        console.error('[Migration Error] Failed to clean categories:', err);
+    }
+};
+
 mongoose.connect(MONGO_URI)
-    .then(() => {
+    .then(async () => {
         console.log('Connected to MongoDB');
+        await cleanAndPopulateCategories();
         app.listen(PORT, () => {
             console.log(`Server is running on http://localhost:${PORT}`);
         });
