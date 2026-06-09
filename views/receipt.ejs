@@ -159,7 +159,7 @@
             </div>
             <div class="row">
                 <span>ผู้รับเงิน:</span>
-                <span><%= sale.soldBy ? sale.soldBy.username : 'พนักงาน' %></span>
+                <span><%= sale.soldBy ? (sale.soldBy.name ? `${sale.soldBy.name} (${sale.soldBy.username})` : sale.soldBy.username) : 'พนักงาน' %></span>
             </div>
         </div>
 

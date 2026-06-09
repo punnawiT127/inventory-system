@@ -151,7 +151,7 @@ exports.renderHistory = async (req, res) => {
         }
 
         const sales = await Sale.find(query)
-            .populate('soldBy', 'username')
+            .populate('soldBy', 'username name')
             .populate('items.product', 'name code')
             .sort({ date: -1 });
 
@@ -173,7 +173,7 @@ exports.renderHistory = async (req, res) => {
 exports.renderReceipt = async (req, res) => {
     try {
         const sale = await Sale.findById(req.params.id)
-            .populate('soldBy', 'username')
+            .populate('soldBy', 'username name')
             .populate('items.product', 'name code');
             
         if (!sale) {

@@ -157,7 +157,7 @@ body: `
                             ${new Date(sale.date).toLocaleString('th-TH', { timeZone: 'Asia/Bangkok', dateStyle: 'short', timeStyle: 'short' })}
                         </td>
                         <td style="padding: 1rem 0;">
-                            ${sale.soldBy ? sale.soldBy.username : 'Unknown'}
+                            ${sale.soldBy ? (sale.soldBy.name ? `${sale.soldBy.name} (${sale.soldBy.username})` : sale.soldBy.username) : 'Unknown'}
                         </td>
                         <td style="padding: 1rem 0;">
                             ${sale.items.length} รายการ

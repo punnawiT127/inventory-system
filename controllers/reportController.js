@@ -48,7 +48,7 @@ exports.renderDashboard = async (req, res) => {
         const lowStockProducts = await Product.find({ stock: { $lte: 5 } }).sort({ stock: 1 }).limit(10);
 
         // Recent Sales
-        const recentSales = await Sale.find().populate('soldBy', 'username').sort({ date: -1 }).limit(5);
+        const recentSales = await Sale.find().populate('soldBy', 'username name').sort({ date: -1 }).limit(5);
 
         // Top Selling Products (Lifetime) Note: Can be optimized for large databases.
         const topProducts = await Sale.aggregate([
